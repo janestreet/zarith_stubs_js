@@ -1,0 +1,8 @@
+(library (name zarith_stubs_js_test) (libraries zarith core_kernel base.md5)
+ (preprocess (pps ppx_jane)))
+
+(alias (name runtest)
+ (deps (file test-complete.sh)
+  (file %{workspace_root}/external/zarith/src/z.ml) (file ../src/runtime.js)
+  (glob_files *.ml))
+ (action (bash ./test-complete.sh)))
