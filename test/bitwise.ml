@@ -99,10 +99,11 @@ end
 
 module Ml_z_hamdist = struct
   let%expect_test "print x, y, hamdist x y" =
+    let fits_int31 x = fits_int32 (Z.shift_left x 1) in
     Static.quickcheck_pair
       ~f:(fun x y ->
         (* hamdist handle negative argument weirdly *)
-        if geq x zero || geq y zero || (fits_int32 x && fits_int32 y)
+        if geq x zero || geq y zero || (fits_int31 x && fits_int31 y)
         then [%message (x : t) (y : t) (hamdist x y : int)]
         else [%message "special"])
       ();
@@ -110,7 +111,7 @@ module Ml_z_hamdist = struct
        integers with a bounded bitcount. *)
     [%expect
       {|
-      ((hash 04f9a57b6ee00725b924a19fcb0d2bb8) (uniqueness_rate 33.577713)) |}]
+      ((hash 0a270232628736ee7d47c8b403250989) (uniqueness_rate 33.284457)) |}]
   ;;
 end
 
