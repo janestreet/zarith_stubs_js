@@ -11,8 +11,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.04.2"}
-  "ppx_jane"
-  "dune"     {build & >= "1.5.1"}
+  "dune" {build & >= "1.5.1"}
 ]
 synopsis: "Javascripts stubs for the Zarith library"
 description: "
