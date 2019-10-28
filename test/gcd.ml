@@ -2,14 +2,9 @@ open! Core_kernel
 open! Import
 
 module Ml_z_gcd = struct
-  (* Testing with zero is unpredictable when negative numbers come into play.
-     https://github.com/ocaml/Zarith/issues/58 *)
   let%expect_test "print x, y, gcd x y" =
-    Static.quickcheck_pair
-      ~filter:Filter.not_zero
-      ~f:(fun x y -> [%message (x : t) (y : t) (gcd x y : t)])
-      ();
-    [%expect "((hash d68d643cd169e881bf1fcd382659cbf6) (uniqueness_rate 99.780702))"]
+    Static.quickcheck_pair ~f:(fun x y -> [%message (x : t) (y : t) (gcd x y : t)]) ();
+    [%expect "((hash 92f8df73c82a7f926d5783455913a5fb) (uniqueness_rate 96.529814))"]
   ;;
 end
 
@@ -42,9 +37,7 @@ module Ml_z_gcdext_intern = struct
     Static.quickcheck_pair
       ~f:(fun x y -> [%message (x : t) (y : t) (gcdext x y : t * t * t)])
       ();
-    [%expect
-      {|
-      ((hash dbf22dbfdb8397782f4069c588c27ed7) (uniqueness_rate 80.30303))|}]
+    [%expect {| ((hash 053b7e844ff37e7111c238d84e8f5c42) (uniqueness_rate 96.529814))|}]
   ;;
 end
 
@@ -60,14 +53,8 @@ module Ml_z_invert = struct
   ;;
 
   let%expect_test "print x, y, invert x y" =
-    Static.quickcheck_pair
-      (* According to gmp docs: "behavior is undefined when y is zero" *)
-      ~filter:Filter.(combine [ not_zero ])
-      ~f:(fun x y -> [%message (x : t) (y : t) (invert x y : t)])
-      ();
+    Static.quickcheck_pair ~f:(fun x y -> [%message (x : t) (y : t) (invert x y : t)]) ();
     (* Low uniqueness rate because not many pairs of numbers are invertable. *)
-    [%expect
-      {|
-      ((hash d49fc2f192aad76966e1cb98f2afac79) (uniqueness_rate 66.502193)) |}]
+    [%expect {| ((hash c792a46ebce6ab1538e70bbf2d463465) (uniqueness_rate 54.203324)) |}]
   ;;
 end

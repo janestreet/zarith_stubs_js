@@ -4,20 +4,22 @@ open! Import
 module Ml_z_powm = struct
   let%expect_test "print x y z, powm x y z" =
     Static.quickcheck_tripple
-      ~f:(fun x y z ->
-        let z = if equal z zero then one else z in
-        (* sigfpe on zero modulus *)
-        [%message (x : t) (y : t) (z : t) (powm x y z : t)])
+      ~f:(fun x y z -> [%message (x : t) (y : t) (z : t) (powm x y z : t)])
       ();
     [%expect
       {|
-        ((hash 3452beda4f7f0543a3ea9850aaeaf79b) (uniqueness_rate 80.49576)) |}]
+      ((hash 9d5d2749d3ebde755be8b18a7420c365) (uniqueness_rate 71.705806)) |}]
   ;;
 end
 
 module Ml_z_root = struct
   let root_helper n s = Z.root (Z.of_string s) n |> Z.print
 
+  let%expect_test "root 2 -1 = invalid_argument" =
+    (try root_helper 2 "-1" with
+     | exn -> Exn.sexp_of_t exn |> print_s);
+    [%expect {|(Invalid_argument "Z.root: even root of a negative number")|}]
+  ;;
 
   let%expect_test "root 2 0 = 0" =
     root_helper 2 "0";
@@ -41,13 +43,12 @@ module Ml_z_root = struct
 
   let%expect_test "print i, x, (root x i)" =
     Static.quickcheck
-      ~filter:Filter.(combine [ not_zero; positive ])
       ~f:(fun x ->
         List.range 2 16
         |> List.map ~f:(fun i -> [%message (x : t) (root x i : t)])
         |> Sexp.List)
       ();
-    [%expect "((hash dcf0cae3f6519c7e0344e07b126f782d) (uniqueness_rate 96.688742))"]
+    [%expect "((hash b2af96bdd453c921ceb81ae36c8d8dcd) (uniqueness_rate 42.96875))"]
   ;;
 end
 
@@ -206,7 +207,7 @@ module Ml_z_pow = struct
         [%message (x : t) (y : t) (pow x y : t)])
       ();
     (* Low uniqueness rate because there are so many "no pow of a negative number" errors. *)
-    [%expect "((hash 5bfc10279cd5569c6f848ba7b0f125fb) (uniqueness_rate 52.297165))"]
+    [%expect "((hash 39a530e2309b08c3b598d4a8525d110c) (uniqueness_rate 52.297165))"]
   ;;
 
   let%expect_test "FILTERED print x y , pow x y" =

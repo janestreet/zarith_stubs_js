@@ -464,14 +464,15 @@ function ml_z_fits_nativeint(z1) {
 
 //external powm: t -> t -> t -> t
 //Provides: ml_z_powm
-//Requires: bigInt, ml_z_normalize, ml_z_invert
+//Requires: bigInt, ml_z_normalize, ml_z_invert, caml_raise_zero_divide
 function ml_z_powm(z1, z2, z3) {
   var zero = bigInt(0);
   var one = bigInt(1);
   z1 = bigInt(z1);
   z2 = bigInt(z2);
   z3 = bigInt(z3);
-  if(z3.equals(zero) || z3.abs().equals(one)) return 0;
+  if(z3.equals(zero)) caml_raise_zero_divide();
+  if(z3.abs().equals(one)) return 0;
   if(z2.equals(zero)) return 1;
   if(z2.lt(0)) {
     var inv = bigInt(ml_z_invert(z1, z3));
@@ -491,7 +492,7 @@ function ml_z_powm(z1, z2, z3) {
 function ml_z_pow(z1, i1) {
   i1 = bigInt(i1);
   if (i1.lt(bigInt(0))) {
-    caml_invalid_argument("Z.pow: exponent must be non-negative");
+    caml_invalid_argument("Z.pow: exponent must be nonnegative");
   }
   return ml_z_normalize(bigInt(z1).pow(i1));
 }
@@ -563,11 +564,15 @@ function ml_z_powm_sec(z1, z2, z3) {
 
 //external root: t -> int -> t
 //Provides: ml_z_root
-//Requires: ml_z_pow,  bigInt, ml_z_normalize
+//Requires: ml_z_pow,  bigInt, ml_z_normalize, caml_invalid_argument
 function ml_z_root(z, i) {
   var zero = bigInt(0);
   var one = bigInt(1);
   z = bigInt(z);
+
+  if (i % 2 === 0 && z.lt(zero)) {
+    caml_invalid_argument("Z.root: even root of a negative number");
+  }
 
   if (z.equals(zero) || z.equals(one)) {
     return ml_z_normalize(z);
@@ -599,16 +604,26 @@ function ml_z_root(z, i) {
 //Provides: ml_z_invert
 //Requires: bigInt, caml_raise_zero_divide, ml_z_gcdext_intern, ml_z_normalize
 function ml_z_invert(a, n) {
+  // Because [a.modInv(n)] produces different results for edge cases,
+  // we wrote our own implementation based on gcdext_intern.
   a = bigInt(a);
   n = bigInt(n);
+  var zero = bigInt(0);
+  var one = bigInt(1);
+  if(n.abs().equals(one))
+    return 0;
+  if (n.equals(zero) && a.abs().equals(one)) {
+    return a;
+  }
+  if (n.equals(zero) || a.equals(zero)) {
+    caml_raise_zero_divide();
+  }
   var x = ml_z_gcdext_intern(a, n);
   var r = bigInt(x[2]);
   var tmp = bigInt(a).multiply(r).mod(n);
-  if(tmp.lt(bigInt(0))) tmp = tmp.add(n.abs());
-  if(r.lt(bigInt(0))) r = r.add(n.abs());
-  if(n.abs().equals(bigInt(1)))
-    return 0;
-  if(tmp.equals(bigInt(1))) {
+  if(tmp.lt(zero)) tmp = tmp.add(n.abs());
+  if(r.lt(zero)) r = r.add(n.abs());
+  if(tmp.equals(one)) {
     return ml_z_normalize(r);
   }
   caml_raise_zero_divide();
