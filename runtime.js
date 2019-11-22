@@ -13,12 +13,14 @@ function ml_z_normalize(x){
 
 //external init: unit -> unit
 //Provides: ml_z_init
-//Requires: caml_zarith_marshal, caml_zarith_unmarshal, caml_custom_ops, ml_z_hash
+//Requires: caml_zarith_marshal, caml_zarith_unmarshal, caml_custom_ops, ml_z_hash, ml_z_compare
 function ml_z_init(unit) {
   caml_custom_ops['_z'] =
     { serialize : caml_zarith_marshal,
       deserialize : caml_zarith_unmarshal,
-      hash : ml_z_hash};
+      hash : ml_z_hash,
+      compare : ml_z_compare,
+    };
   return 0 }
 
 //external ml_z_install_frametable: unit -> unit
@@ -201,13 +203,16 @@ function ml_z_of_nativeint(z) {
 //external of_int64: int64 -> t
 //Provides: ml_z_of_int64 const
 //Requires: bigInt, caml_int64_compare, caml_int64_neg, ml_z_normalize
+//Requires: caml_int64_create_lo_hi,caml_int64_hi32,caml_int64_lo32
 function ml_z_of_int64(i64) {
   var neg = false;
-  if(caml_int64_compare(i64, [255,0,0,0]) < 0) {
+  if(caml_int64_compare(i64, caml_int64_create_lo_hi(0,0)) < 0) {
     neg = true;
     i64 = caml_int64_neg(i64)
   }
-  var x = bigInt(i64[1]).add(bigInt(i64[2]).shiftLeft(24)).add(bigInt(i64[3]).shiftLeft(48));
+  var lo = caml_int64_lo32(i64) >>> 0;
+  var hi = caml_int64_hi32(i64) >>> 0;
+  var x = bigInt(lo).add(bigInt(hi).shiftLeft(32));
   if(neg) { x = x.negate() };
   return ml_z_normalize(x)
 }
@@ -230,22 +235,23 @@ function ml_z_to_int(z1) {
 }
 
 //external to_int32: t -> int32
-//Provides: ml_z_to_int32 const
+//Provides: ml_z_to_int32
 //Requires: ml_z_to_int
 function ml_z_to_int32(z1) { return ml_z_to_int(z1) }
 
 //external to_int64: t -> int64
 //Provides: ml_z_to_int64
 //Requires: bigInt, ml_z_fits_int64, caml_raise_constant, caml_named_value
+//Requires: caml_int64_create_lo_hi
 function ml_z_to_int64(z1) {
   z1 = bigInt(z1)
   if(!ml_z_fits_int64(z1)) {
     caml_raise_constant(caml_named_value("ml_z_overflow"));
   }
-  var a = z1.and(bigInt(0xffffff)).toJSNumber()|0;
-  var b = z1.shiftRight(24).and(bigInt(0xffffff)).toJSNumber()|0;
-  var c = z1.shiftRight(48).and(bigInt(0xffff)).toJSNumber()|0;
-  var x = [ 255, a, b, c];
+  var mask = bigInt(0xffffffff)
+  var lo = z1.and(mask).toJSNumber();
+  var hi = z1.shiftRight(32).and(mask).toJSNumber();
+  var x = caml_int64_create_lo_hi(lo, hi);
   return x;
 }
 

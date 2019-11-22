@@ -26,6 +26,20 @@ module Ml_z_of_int32 = struct
 end
 
 module Ml_z_of_int64 = struct
+  let max = Z.of_string "9223372036854775807"
+  let min = Z.of_string "-9223372036854775808"
+
+  let%expect_test _ =
+    Z.to_int64 max |> [%sexp_of: Int64.t option] |> print_s;
+    [%expect {| (9223372036854775807) |}];
+    Z.to_int64 (Z.add max Z.one) |> [%sexp_of: Int64.t option] |> print_s;
+    [%expect {| () |}];
+    Z.to_int64 min |> [%sexp_of: Int64.t option] |> print_s;
+    [%expect {| (-9223372036854775808) |}];
+    Z.to_int64 (Z.sub min Z.one) |> [%sexp_of: Int64.t option] |> print_s;
+    [%expect {| () |}]
+  ;;
+
   let%test "a = a |> z_of_int_64 |> int64_of_z" =
     Core_kernel.Quickcheck.test Int64.quickcheck_generator ~f:(fun i ->
       assert (Int64.equal i (i |> Z.of_int64_exn |> Z.to_int64_exn)));
