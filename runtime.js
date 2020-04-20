@@ -271,10 +271,10 @@ function ml_z_to_nativeint(z1) { return ml_z_to_int(z1) }
 //external format: string -> t -> string
 //Provides: ml_z_format 
 //Requires: bigInt
-//Requires: caml_to_js_string, caml_js_to_string, caml_failwith, caml_new_string, ml_z_normalize
+//Requires: caml_jsbytes_of_string, caml_failwith, caml_string_of_jsbytes, ml_z_normalize
 function ml_z_format(fmt, z1) {
   z1 = bigInt(z1);
-  var fmt = fmt.toString();
+  var fmt = caml_jsbytes_of_string(fmt);
   // https://github.com/ocaml/Zarith/blob/d0555d451ce295c4497f24a8d9993f8dd23097df/z.mlip#L297
   var base = 10;
   var cas = 0;
@@ -324,11 +324,11 @@ function ml_z_format(fmt, z1) {
     for(;res.length+pre.length<width;) res = pad + res;
     res = pre + res;
   }
-  return caml_new_string(res);
+  return caml_string_of_jsbytes(res);
 }
 
 //Provides: jsoo_z_of_js_string_base
-//Requires: bigInt, caml_to_js_string, caml_invalid_argument, ml_z_normalize
+//Requires: bigInt, caml_invalid_argument, ml_z_normalize
 function jsoo_z_of_js_string_base(base, s) {
   if (base == 0) { // https://github.com/ocaml/Zarith/blob/b8dbaf48a7927061df699ad7ce642bb4f1fe5308/caml_z.c#L598
     base = 10;
@@ -381,16 +381,16 @@ function jsoo_z_of_js_string_base(base, s) {
 
 //external of_substring_base: int -> string -> pos:int -> len:int -> t
 //Provides: ml_z_of_substring_base
-//Requires: caml_string_of_array, caml_array_of_string, jsoo_z_of_js_string_base, caml_to_js_string, caml_invalid_argument, caml_ml_string_length
+//Requires: jsoo_z_of_js_string_base, caml_jsbytes_of_string, caml_invalid_argument, caml_ml_string_length
 function ml_z_of_substring_base(base, s, pos, len) {
-  if(pos != 0 || len != caml_ml_string_length(s)) {
-    s = caml_array_of_string(s);
+  s = caml_jsbytes_of_string(s);
+  if(pos != 0 || len != s.length) {
     if (s.length - pos < len) {
       caml_invalid_argument("Z.of_substring_base: invalid offset or length");
     }
-    s = caml_string_of_array(s.slice(pos,pos+len));
+    s = s.slice(pos,pos+len);
   }
-  return jsoo_z_of_js_string_base(base, caml_to_js_string(s));
+  return jsoo_z_of_js_string_base(base, s);
 }
 
 //external compare: t -> t -> int
@@ -523,7 +523,7 @@ function ml_z_hash(z1) {
 
 //external to_bits: t -> string
 //Provides: ml_z_to_bits const
-//Requires: caml_new_string, caml_str_repeat, bigInt
+//Requires: caml_string_of_jsbytes, caml_str_repeat, bigInt
 function ml_z_to_bits(z1) {
   z1 = bigInt(z1).abs();
   var res = "";
@@ -534,7 +534,7 @@ function ml_z_to_bits(z1) {
   while(res.length % 4 != 0){
     res += String.fromCharCode(0);
   }
-  return caml_new_string(res);
+  return caml_string_of_jsbytes(res);
 }
 
 //external of_bits: string -> t
