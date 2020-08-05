@@ -1,4 +1,5 @@
-(library (name zarith_stubs_js_test) (libraries zarith core_kernel base.md5)
+(library (name zarith_stubs_js_test)
+ (libraries zarith zarith_stubs_js core_kernel base.md5)
  (preprocess (pps ppx_jane)))
 
 (alias (name runtest)
