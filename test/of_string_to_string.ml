@@ -23,8 +23,7 @@ module Ml_z_of_substring_base = struct
           | exn -> Sexp.Atom (Exn.to_string exn))
         |> Sexp.List)
       ();
-    [%expect
-      {|
+    [%expect {|
       ((hash 6e19ad54e13932775b7dcb252f2460c6) (uniqueness_rate 81.25))|}]
   ;;
 
@@ -35,8 +34,7 @@ module Ml_z_of_substring_base = struct
         |> List.map ~f:(fun (i, f) ->
           let formatted = Z.format f x in
           let parsed = Z.of_string_base i formatted in
-          [%message
-            (x : t) (i : int) (f : string) (formatted : string) (parsed : t)])
+          [%message (x : t) (i : int) (f : string) (formatted : string) (parsed : t)])
         |> Sexp.List)
       ();
     [%expect

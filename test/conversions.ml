@@ -177,9 +177,7 @@ module Ml_z_of_float = struct
     Core_kernel.Quickcheck.test Core_kernel.Float.quickcheck_generator ~f:(fun f ->
       if Float.is_finite f
       then
-        [%test_eq: float]
-          (f |> Float.round_towards_zero)
-          (f |> Z.of_float |> Z.to_float)
+        [%test_eq: float] (f |> Float.round_towards_zero) (f |> Z.of_float |> Z.to_float)
       else (
         try
           let (_ : t) = Z.of_float f in

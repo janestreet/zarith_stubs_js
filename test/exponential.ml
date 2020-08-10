@@ -137,10 +137,7 @@ module Ml_z_perfect_power = struct
   let%test "-0xf33e5a5a59" = test_perfect_power_helper "-0xf33e5a5a59" 0
   let%test "0xed1b1182118135d" = test_perfect_power_helper "0xed1b1182118135d" 1
   let%test "-0xed1b1182118135d" = test_perfect_power_helper "-0xed1b1182118135d" 1
-
-  let%test "0xe71f6eb7689cc276b2f1" =
-    test_perfect_power_helper "0xe71f6eb7689cc276b2f1" 1
-  ;;
+  let%test "0xe71f6eb7689cc276b2f1" = test_perfect_power_helper "0xe71f6eb7689cc276b2f1" 1
 
   let%test "-0xe71f6eb7689cc276b2f1" =
     test_perfect_power_helper "-0xe71f6eb7689cc276b2f1" 0

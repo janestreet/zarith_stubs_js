@@ -12,9 +12,7 @@ end
 
 module Ml_z_logor = struct
   let%expect_test "print (x, y, x logor y)" =
-    Static.quickcheck_pair
-      ~f:(fun x y -> [%message (x : t) (y : t) (Z.logor x y : t)])
-      ();
+    Static.quickcheck_pair ~f:(fun x y -> [%message (x : t) (y : t) (Z.logor x y : t)]) ();
     [%expect "((hash 924dc08ed08d44cc6daa895e9cb15c1c) (uniqueness_rate 96.529814))"]
   ;;
 end
@@ -77,8 +75,7 @@ module Ml_z_testbit = struct
     Static.quickcheck
       ~f:(fun x ->
         Sexp.List
-          (List.init 100 ~f:(fun i ->
-             [%message (x : t) (i : int) (Z.testbit x i : bool)])))
+          (List.init 100 ~f:(fun i -> [%message (x : t) (i : int) (Z.testbit x i : bool)])))
       ();
     [%expect
       {|

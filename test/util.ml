@@ -123,8 +123,7 @@ module Static = struct
     in
     if verbose then print_endline big_sexp else ();
     let hash = big_sexp |> Md5_lib.string |> Md5_lib.to_hex in
-    if not quiet
-    then print_s [%message (hash : string) (uniqueness_rate : Float.Terse.t)]
+    if not quiet then print_s [%message (hash : string) (uniqueness_rate : Float.Terse.t)]
   ;;
 
   let quickcheck ?quiet ?(verbose = false) ?(filter = Fn.const true) ~f () =
