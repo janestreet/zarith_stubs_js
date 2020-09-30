@@ -52,6 +52,57 @@ module Ml_z_root = struct
   ;;
 end
 
+module Ml_z_rootrem = struct
+  let rootrem_helper n s =
+    Z.rootrem (Z.of_string s) n
+    |> fun (a, b) ->
+    Z.print a;
+    print_string " - ";
+    Z.print b
+  ;;
+
+  let%expect_test "rootrem 2 -1 = invalid_argument" =
+    (try rootrem_helper 2 "-1" with
+     | exn -> Exn.sexp_of_t exn |> print_s);
+    [%expect {|(Invalid_argument "Z.rootrem: even root of a negative number")|}]
+  ;;
+
+  let%expect_test "rootrem 2 0 = 0" =
+    rootrem_helper 2 "0";
+    [%expect "0 - 0"]
+  ;;
+
+  let%expect_test "rootrem 2 1 = 1" =
+    rootrem_helper 2 "1";
+    [%expect "1 - 0"]
+  ;;
+
+  let%expect_test "rootrem 2 2 = 1" =
+    rootrem_helper 2 "2";
+    [%expect "1 - 1"]
+  ;;
+
+  let%expect_test "rootrem 2 4 = 2" =
+    rootrem_helper 2 "4";
+    [%expect "2 - 0"]
+  ;;
+
+  let%expect_test "rootrem 2 4 = 2" =
+    rootrem_helper 2 "8";
+    [%expect "2 - 4"]
+  ;;
+
+  let%expect_test "print i, x, (rootrem x i)" =
+    Static.quickcheck
+      ~f:(fun x ->
+        List.range 2 16
+        |> List.map ~f:(fun i -> [%message (x : t) (rootrem x i : t * t)])
+        |> Sexp.List)
+      ();
+    [%expect {| ((hash 202e15549663f9b0e3305f9c6af33961) (uniqueness_rate 42.96875))|}]
+  ;;
+end
+
 module Ml_z_perfect_square = struct
   let%expect_test "print x, perfect_square x" =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (perfect_square x : bool)]) ();

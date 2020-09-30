@@ -18,5 +18,5 @@ implemented=$(cat ../src/runtime.js \
                   | grep -v normalize \
                   | sort)
 
-diff <(echo $cstubs) <(echo $implemented) || (echo "Some javascript stubs are missing"; exit 1)
-diff <(echo $implemented) <(echo $tested) || (echo "Some javascript stubs are not tested"; exit 1)
+diff <(echo $cstubs | xargs -n1 echo) <(echo $implemented | xargs -n1 echo) || (echo "Some javascript stubs are missing"; exit 1)
+diff <(echo $implemented | xargs -n1 echo) <(echo $tested | xargs -n1 echo) || (echo "Some javascript stubs are not tested"; exit 1)

@@ -606,6 +606,44 @@ function ml_z_root(z, i) {
   return ml_z_normalize(ans);
 }
 
+//external rootrem: t -> int -> t * t
+//Provides: ml_z_rootrem
+//Requires: ml_z_pow,  bigInt, ml_z_normalize, caml_invalid_argument
+function ml_z_rootrem(z, i) {
+  var zero = bigInt(0);
+  var one = bigInt(1);
+  z = bigInt(z);
+
+  if (i % 2 === 0 && z.lt(zero)) {
+    caml_invalid_argument("Z.rootrem: even root of a negative number");
+  }
+
+  if (z.equals(zero) || z.equals(one)) {
+    return [0, ml_z_normalize(z), zero];
+  }
+
+  var start = zero;
+  var end = z;
+  var ans = null;
+
+  var two = bigInt(2);
+
+  while (start.leq(end))
+  {
+    var mid = start.add(end).divide(two);
+    var po = mid.pow(i);
+    if (po.equals(z)) {
+      return [0, ml_z_normalize(mid), zero];
+    } else if (po.lt(z)) {
+      start = mid.next();
+      ans = mid;
+    } else {
+      end = mid.prev();
+    }
+  }
+  return [0, ml_z_normalize(ans), ml_z_normalize(z.minus(ans.pow(i)))];
+}
+
 //external invert: t -> t -> t
 //Provides: ml_z_invert
 //Requires: bigInt, caml_raise_zero_divide, ml_z_gcdext_intern, ml_z_normalize
@@ -858,6 +896,7 @@ function ml_z_divexact(z1, z2) {
   return ml_z_div(z1, z2);
 }
 
+
 //Provides: caml_zarith_marshal
 //Requires: bigInt
 function caml_zarith_marshal(writer, v, sz) {
@@ -898,4 +937,174 @@ function caml_zarith_unmarshal(reader, sz) {
   if(negate) x = x.negate();
   sz[0] = len + 4;
   return ml_z_normalize(x)
+}
+
+//Provides: ml_z_divisible
+//Requires: bigInt
+function ml_z_divisible(a, b){
+  var zero = bigInt(0);
+  a = bigInt(a);
+  b = bigInt(b);
+  if(a.equals(zero) && b.equals(zero)) return 1;
+  return a.isDivisibleBy(b)?1:0;
+}
+
+//Provides: ml_z_congruent
+//Requires: bigInt
+function ml_z_congruent(a,b,c){
+  var zero = bigInt(0);
+  a = bigInt(a);
+  b = bigInt(b);
+  c = bigInt(c);
+  if(c.equals(zero) && a.equals(b)) return 1;
+  return a.minus(b).isDivisibleBy(c) ? 1 : 0;
+}
+
+//Provides: ml_z_remove
+//Requires: bigInt, ml_z_normalize, caml_raise_zero_divide
+function ml_z_remove(a,b){
+  var zero = bigInt(0);
+  var one = bigInt(1);
+  a = bigInt(a);
+  b = bigInt(b);
+  if(b.equals(zero)) caml_raise_zero_divide();
+  if(a.equals(zero) || b.abs().equals(one)) return [0, a, 0];
+  var i = 0;
+  while(a.isDivisibleBy(b)){
+    a = a.divide(b);
+    i++;
+  }
+  return [0, ml_z_normalize(a), i];
+}
+
+//Provides: ml_z_fac
+//Requires: ml_z_facM, caml_invalid_argument
+function ml_z_fac(i){
+  if(i<=0) caml_invalid_argument("Z.fact: negative arguments");
+  return ml_z_facM(i,1);
+}
+
+//Provides: ml_z_fac2
+//Requires: ml_z_facM, caml_invalid_argument
+function ml_z_fac2(i){
+  if(i<=0) caml_invalid_argument("Z.fact2: negative arguments");
+  return ml_z_facM(i,2);
+}
+
+//Provides: ml_z_facM
+//Requires: caml_invalid_argument, bigInt, ml_z_normalize
+function ml_z_facM(i, m){
+  if(i<=0||m<=0) caml_invalid_argument("Z.factM: negative arguments");
+  m = bigInt(m);
+  var current = bigInt(i);
+  var res = bigInt(1);
+  while(current.isPositive()){
+    res = res.multiply(current);
+    current = current.minus(m);
+  }
+  return ml_z_normalize(res);
+}
+
+//Provides: ml_z_fib
+//Requires: caml_invalid_argument, ml_z_normalize, bigInt
+function ml_z_fib(i){
+  if(i < 0) caml_invalid_argument("Z.fib: negative arguments");
+  if(i == 0 || i == 1) return i;
+  var a = bigInt(0), b = bigInt(1);
+  for(var k = 1; k < i; k++){
+    var b2 = b;
+    b = a.add(b);
+    a = b2;
+  }
+  return ml_z_normalize(b);
+}
+
+//Provides: ml_z_lucnum
+//Requires: caml_invalid_argument, ml_z_normalize, bigInt
+function ml_z_lucnum(i){
+  if(i < 0) caml_invalid_argument("Z.lucnum: negative arguments");
+  if(i == 0) return 2;
+  if(i == 1) return 1;
+  var a = bigInt(2), b = bigInt(1);
+  for(var k = 1; k < i; k++){
+    var b2 = b;
+    b = a.add(b);
+    a = b2;
+  }
+  return ml_z_normalize(b);
+}
+
+//Provides: ml_z_jacobi
+//Requires: bigInt, caml_invalid_argument
+function ml_z_jacobi(n, k){
+  n = bigInt(n);
+  k = bigInt(k);
+  //assert(k > 0 and k % 2 == 1)
+  if(k.leq(bigInt(0)) || k.mod(bigInt(2)).neq(bigInt(1)))
+    caml_invalid_argument("Z.jacobi: second argument is negative or even");
+  n = n.mod(k);
+  if(n.lt(bigInt(0))) n = n.add(k);
+  var t = 1;
+  while (! n.equals(bigInt(0))){
+    while (n.isDivisibleBy(bigInt(2))) {
+      n = n.divide(bigInt(2))
+      var r = k.mod(bigInt(8))
+      if (r.equals(bigInt(3)) || r.equals(bigInt(5))){
+        t = -t
+      }
+    }
+    var n1 = n, k1 = k;
+    n = k1;
+    k = n1;
+    if (n.mod(bigInt(4)).equals(bigInt(3)) &&  k.mod(bigInt(4)).equals(bigInt(3))) {
+      t = -t
+    }
+    n = n.mod(k)
+  }
+  if(k.equals(bigInt(1)))
+    return t
+  else
+    return 0
+}
+
+//Provides: ml_z_legendre
+//Requires: ml_z_jacobi
+function ml_z_legendre(a,b){
+  return ml_z_jacobi(a,b);
+}
+
+//Provides: ml_z_kronecker
+//Requires: caml_failwith
+function ml_z_kronecker(n,k){
+  caml_failwith("ml_z_kronecker is not implemented");
+}
+
+//Provides: ml_z_primorial
+//Requires: bigInt, ml_z_normalize
+function ml_z_primorial(a){
+  var one = bigInt(1);
+  var two = bigInt(2);
+  var z1 = one;
+  var res = one;
+  a = bigInt(a);
+  while (z1.leq(a)) {
+    if (z1.isProbablePrime(25)) {
+      res = res.multiply(z1);
+    }
+    if(z1.equals(one) || z1.equals(two)) z1 = z1.add(one);
+    else z1 = z1.add(two)
+  }
+  return ml_z_normalize(res);
+}
+
+//Provides: ml_z_bin
+//Requires: ml_z_normalize, bigInt, caml_invalid_argument
+function ml_z_bin(n, k){
+  var n = bigInt(n);
+  var k = bigInt(k);
+  var coeff = bigInt(1);
+  for (var x = n.minus(k).add(bigInt(1)); x.leq(n); x = x.add(bigInt(1))) coeff = coeff.multiply(x);
+  for (x = bigInt(1); x.leq(k); x = x.add(bigInt(1))) coeff = coeff.divide(x);
+  return ml_z_normalize(coeff);
+
 }
