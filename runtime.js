@@ -348,7 +348,7 @@ function jsoo_z_of_js_string_base(base, s) {
           base = 16;
         } else if (bc == 'b' || bc == 'B') {
           base = 2;
-        }
+        } 
         if(base != 10) {
           s = s.substring(p+1);
           if(sign == -1) s = "-" + s;
@@ -356,20 +356,22 @@ function jsoo_z_of_js_string_base(base, s) {
       }
     }
   }
-  //remove leading '+'
-  if (s[0] == '+') s = s.substring(1);
-  //remove leading '0's
-  s = s.replace(/^0+/, '');
-  //normalize "empty" numbers
-  if(s == '-' || s == '') s = '0';
-
+  
   function digit(code){
     if(code >= 48 && code <= 57) return code - 48;
     if(code >= 97 && code <= 102) return code - 97 + 10;
     if(code >= 65 && code <= 70) return code - 65 + 10;
   }
   var i = 0;
-  if(s[i] == '-') i++;
+  if (s[i] == '+') {
+    //remove leading '+'
+    s = s.substring(1);
+  }
+  else if(s[i] == '-') i++;
+  if(s[i] == '_') caml_invalid_argument("Z.of_substring_base: invalid digit");
+  s = s.replace(/_/g,'');
+  //normalize "empty" numbers
+  if(s == '-' || s == '') s = '0';
   for( ; i < s.length ; i++){
     var c = digit(s.charCodeAt(i));
     if(c == undefined || c >= base)
@@ -404,7 +406,7 @@ function ml_z_compare(z1, z2) {
 //Provides: ml_z_equal const
 //Requires: bigInt
 function ml_z_equal(z1, z2) {
-  return bigInt(z1).equals(bigInt(z2));
+  return bigInt(z1).equals(bigInt(z2)) ? 1 : 0;
 }
 
 //external sign: t -> int

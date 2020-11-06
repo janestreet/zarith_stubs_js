@@ -2,6 +2,74 @@ open! Core_kernel
 open! Import
 
 module Ml_z_of_substring_base = struct
+  let add_underscore s =
+    List.init
+      (Int.succ (String.length s))
+      ~f:(fun i ->
+        String.prefix s i ^ "_" ^ String.suffix s (Int.( - ) (String.length s) i))
+  ;;
+
+  let test ~of_string ~sexp_of_t s =
+    add_underscore s
+    |> List.map ~f:(fun s -> s, Result.try_with (fun () -> of_string s))
+    |> [%sexp_of: (string * (t, Exn.t) Result.t) list]
+    |> print_s
+  ;;
+
+  let%expect_test "Z.of_string" =
+    let test = test ~of_string:Z.of_string ~sexp_of_t in
+    test "123";
+    [%expect
+      {|
+        ((_123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (1_23 (Ok 123)) (12_3 (Ok 123)) (123_ (Ok 123))) |}];
+    test "0x123";
+    [%expect
+      {|
+        ((_0x123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (0_x123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (0x_123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (0x1_23 (Ok 291)) (0x12_3 (Ok 291)) (0x123_ (Ok 291))) |}];
+    test "-0o123";
+    [%expect
+      {|
+        ((_-0o123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (-_0o123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (-0_o123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (-0o_123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (-0o1_23 (Ok -83)) (-0o12_3 (Ok -83)) (-0o123_ (Ok -83))) |}]
+  ;;
+
+  let%expect_test "Q.of_string" =
+    let test =
+      test ~of_string:Zarith.Q.of_string ~sexp_of_t:(fun q ->
+        Sexp.Atom (Zarith.Q.to_string q))
+    in
+    test "123";
+    [%expect
+      {|
+        ((_123 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (1_23 (Ok 123)) (12_3 (Ok 123)) (123_ (Ok 123))) |}];
+    test "12.3e12";
+    [%expect
+      {|
+        ((_12.3e12 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (1_2.3e12 (Ok 12300000000000)) (12_.3e12 (Ok 12300000000000))
+         (12._3e12 (Ok 12300000000000)) (12.3_e12 (Ok 12300000000000))
+         (12.3e_12 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (12.3e1_2 (Ok 12300000000000)) (12.3e12_ (Ok 12300000000000))) |}];
+    test "0x1.23p12";
+    [%expect
+      {|
+        ((_0x1.23p12 (Error (Invalid_argument "Q.of_string: invalid digit")))
+         (0_x1.23p12 (Error (Invalid_argument "Q.of_string: invalid digit")))
+         (0x_1.23p12 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (0x1_.23p12 (Ok 4656)) (0x1._23p12 (Ok 4656)) (0x1.2_3p12 (Ok 4656))
+         (0x1.23_p12 (Ok 4656))
+         (0x1.23p_12 (Error (Invalid_argument "Z.of_substring_base: invalid digit")))
+         (0x1.23p1_2 (Ok 4656)) (0x1.23p12_ (Ok 4656))) |}]
+  ;;
+
   let%expect_test "print of_base (format x)" =
     Static.quickcheck
       ~f:(fun x ->

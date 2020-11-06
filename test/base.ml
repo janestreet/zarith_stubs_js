@@ -16,6 +16,9 @@ module Ml_z_equal = struct
   let%test_unit "succ a != a" =
     Dynamic.quickcheck () ~f:(fun x -> assert (not (Z.equal x (succ x))))
   ;;
+
+  let%test _ = Bool.equal (Z.equal Z.one Z.one) (Int.equal 1 1)
+  let%test _ = Bool.equal (Z.equal Z.one Z.zero) (Int.equal 1 0)
 end
 
 module Ml_z_hash = struct
