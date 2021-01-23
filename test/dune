@@ -4,6 +4,6 @@
 
 (alias (name runtest)
  (deps (file test-complete.sh)
-  (file %{workspace_root}/external/zarith/src/z.ml) (file ../src/runtime.js)
+  (file %{workspace_root}/external/zarith/src/z.ml) (file ../runtime.js)
   (glob_files *.ml))
  (action (bash ./test-complete.sh)))
