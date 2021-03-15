@@ -1110,3 +1110,8 @@ function ml_z_bin(n, k){
   return ml_z_normalize(coeff);
 
 }
+
+//Provides: ml_z_mul_overflows
+function ml_z_mul_overflows(_vx, _vy){
+  return true;
+}
