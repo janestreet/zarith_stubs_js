@@ -57,7 +57,7 @@ module Static = struct
 
   let () =
     let regenerate_stable_quickcheck_file =
-      match Sys.getenv_opt "zarith_test_generate_sample" with
+      match Sys.getenv "zarith_test_generate_sample" with
       | Some "true" -> true
       | Some _ ->
         failwith "zarith_test_generate_sample should be set to true or not set at all"

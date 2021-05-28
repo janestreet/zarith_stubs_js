@@ -18,7 +18,7 @@ end
 module Ml_z_size = struct
   let%expect_test "print x, size x" =
     let size64 =
-      match Sys.word_size with
+      match Sys.word_size_in_bits with
       | 64 -> fun x -> size x
       | 32 -> fun x -> Int.((size x + 1) / 2)
       | _ -> assert false

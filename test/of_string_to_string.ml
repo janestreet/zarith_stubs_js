@@ -114,7 +114,7 @@ end
 module Ml_z_to_bits = struct
   let to_bits a =
     let r = Z.to_bits a in
-    match Sys.word_size with
+    match Sys.word_size_in_bits with
     | 64 -> Option.value ~default:r (String.chop_suffix r ~suffix:"\000\000\000\000")
     | _ -> r
   ;;
