@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Core
 open! Z
 
 let sexp_of_t t = Sexp.Atom (Z.to_string t)
@@ -108,7 +108,7 @@ module Static = struct
         List.map f ~f:(fun f ->
           try f a with
           | Division_by_zero -> Sexp.Atom "division-by-zero"
-          | ex -> Sexp.Atom (Core_kernel.Exn.to_string ex))
+          | ex -> Sexp.Atom (Core.Exn.to_string ex))
       in
       Queue.enqueue_all q result);
     let all_sexps = Queue.to_list q in

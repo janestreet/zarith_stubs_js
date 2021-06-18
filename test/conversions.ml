@@ -1,9 +1,9 @@
-open! Core_kernel
+open! Core
 open! Import
 
 module Ml_z_of_int = struct
   let%test "a = a |> z_of_int |> int_of_z" =
-    Core_kernel.Quickcheck.test Int.quickcheck_generator ~f:(fun i ->
+    Core.Quickcheck.test Int.quickcheck_generator ~f:(fun i ->
       assert (Int.equal i (i |> Z.of_int_exn |> Z.to_int_exn)));
     true
   ;;
@@ -11,7 +11,7 @@ end
 
 module Ml_z_of_nativeint = struct
   let%test "a = a |> z_of_nativeint |> int_of_z" =
-    Core_kernel.Quickcheck.test Nativeint.quickcheck_generator ~f:(fun i ->
+    Core.Quickcheck.test Nativeint.quickcheck_generator ~f:(fun i ->
       assert (Nativeint.equal i (i |> Z.of_nativeint_exn |> Z.to_nativeint_exn)));
     true
   ;;
@@ -19,7 +19,7 @@ end
 
 module Ml_z_of_int32 = struct
   let%test "a = a |> z_of_int32 |> int32_of_z" =
-    Core_kernel.Quickcheck.test Int32.quickcheck_generator ~f:(fun i ->
+    Core.Quickcheck.test Int32.quickcheck_generator ~f:(fun i ->
       assert (Int32.equal i (i |> Z.of_int32_exn |> Z.to_int32_exn)));
     true
   ;;
@@ -41,7 +41,7 @@ module Ml_z_of_int64 = struct
   ;;
 
   let%test "a = a |> z_of_int_64 |> int64_of_z" =
-    Core_kernel.Quickcheck.test Int64.quickcheck_generator ~f:(fun i ->
+    Core.Quickcheck.test Int64.quickcheck_generator ~f:(fun i ->
       assert (Int64.equal i (i |> Z.of_int64_exn |> Z.to_int64_exn)));
     true
   ;;
@@ -49,7 +49,7 @@ end
 
 module Ml_z_to_int = struct
   let%test "i = i |> z_of_int |> z_to_int" =
-    Core_kernel.Quickcheck.test Int.quickcheck_generator ~f:(fun x ->
+    Core.Quickcheck.test Int.quickcheck_generator ~f:(fun x ->
       assert (Int.equal x (x |> Z.of_int |> Z.to_int_exn)));
     true
   ;;
@@ -81,7 +81,7 @@ end
 
 module Ml_z_to_nativeint = struct
   let%test "i = i |> z_of_int |> z_to_int" =
-    Core_kernel.Quickcheck.test Nativeint.quickcheck_generator ~f:(fun x ->
+    Core.Quickcheck.test Nativeint.quickcheck_generator ~f:(fun x ->
       assert (Nativeint.equal x (x |> Z.of_nativeint |> Z.to_nativeint_exn)));
     true
   ;;
@@ -174,7 +174,7 @@ module Ml_z_of_float = struct
   ;;
 
   let%expect_test "float conversions" =
-    Core_kernel.Quickcheck.test Core_kernel.Float.quickcheck_generator ~f:(fun f ->
+    Core.Quickcheck.test Core.Float.quickcheck_generator ~f:(fun f ->
       if Float.is_finite f
       then
         [%test_eq: float] (f |> Float.round_towards_zero) (f |> Z.of_float |> Z.to_float)

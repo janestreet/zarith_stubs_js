@@ -1,5 +1,5 @@
 open! Z
-open! Core_kernel
+open! Core
 
 module Dynamic : sig
   val quickcheck : ?include_zero:bool -> ?trials:int -> f:(t -> unit) -> unit -> unit

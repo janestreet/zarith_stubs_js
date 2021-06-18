@@ -1,3 +1,3 @@
-include Core_kernel
+include Core
 include Z
 include Util
