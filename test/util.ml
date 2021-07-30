@@ -100,7 +100,7 @@ module Static = struct
     List.map zipped ~f:(fun ((a, b), c) -> a, b, c)
   ;;
 
-  let qc ?(quiet = false) ~target ~verbose ~f =
+  let[@warning "-16"] qc ?(quiet = false) ~target ~verbose ~f =
     let q = Queue.create () in
     let target = target in
     List.iter target ~f:(fun a ->
