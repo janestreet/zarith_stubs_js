@@ -24,14 +24,14 @@ end
 module Ml_z_hash = struct
   (* We don't expect hash to be the same in javascript and native 64bit *)
 
-  let%expect_test ("print x, hash x (no-js)"[@tags "64-bits-only"]) =
+  let%expect_test ("print x, hash x (no-js)" [@tags "64-bits-only"]) =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (hash x : int)]) ();
     [%expect
       {|
       ((hash 776eb15c9cfd7c9e3a001bc79c8b193b) (uniqueness_rate 85.742188)) |}]
   ;;
 
-  let%expect_test ("print x, hash x (js-only)"[@tags "js-only"]) =
+  let%expect_test ("print x, hash x (js-only)" [@tags "js-only"]) =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (hash x : int)]) ();
     [%expect
       {|

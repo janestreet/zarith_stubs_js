@@ -56,7 +56,7 @@ module Ml_z_legendre = struct
 end
 
 module Ml_z_kronecker = struct
-  let%expect_test ("print x, y, kronecker x y"[@tags "no-js"]) =
+  let%expect_test ("print x, y, kronecker x y" [@tags "no-js"]) =
     let open Zarith.Z in
     Static.quickcheck_pair
       ~f:(fun x y -> [%message (x : t) (y : t) (kronecker x y : int)])

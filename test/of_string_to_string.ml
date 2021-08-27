@@ -251,7 +251,7 @@ module Marshal = struct
         00 |}]
   ;;
 
-  let%expect_test ("marshal mix len"[@tags "64-bits-only"]) =
+  let%expect_test ("marshal mix len" [@tags "64-bits-only"]) =
     m "-549389047489539543158";
     [%expect
       {|
@@ -265,7 +265,7 @@ module Marshal = struct
         00 |}]
   ;;
 
-  let%expect_test ("marshal mix len"[@tags "32-bits-only"]) =
+  let%expect_test ("marshal mix len" [@tags "32-bits-only"]) =
     m "-549389047489539543158";
     [%expect
       {|
@@ -278,7 +278,7 @@ module Marshal = struct
         C8,1D,00,00,00 |}]
   ;;
 
-  let%expect_test ("marshal mix len"[@tags "js-only"]) =
+  let%expect_test ("marshal mix len" [@tags "js-only"]) =
     m "-549389047489539543158";
     [%expect
       {|
