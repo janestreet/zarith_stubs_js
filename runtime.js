@@ -11,6 +11,12 @@ function ml_z_normalize(x){
   return x;
 }
 
+//Provides: ml_z_mul_overflows
+function ml_z_mul_overflows(x,y){
+  var z = x*y;
+  return z != (z|0);
+}
+
 //external init: unit -> unit
 //Provides: ml_z_init
 //Requires: caml_zarith_marshal, caml_zarith_unmarshal, caml_custom_ops, ml_z_hash, ml_z_compare
