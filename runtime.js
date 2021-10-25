@@ -11,6 +11,12 @@ function ml_z_normalize(x){
   return x;
 }
 
+//Provides: ml_z_mul_overflows
+function ml_z_mul_overflows(x,y){
+  var z = x*y;
+  return z != (z|0);
+}
+
 //external init: unit -> unit
 //Provides: ml_z_init
 //Requires: caml_zarith_marshal, caml_zarith_unmarshal, caml_custom_ops, ml_z_hash, ml_z_compare
@@ -22,10 +28,6 @@ function ml_z_init(unit) {
       compare : ml_z_compare,
     };
   return 0 }
-
-//external ml_z_install_frametable: unit -> unit
-//Provides: ml_z_install_frametable const
-function ml_z_install_frametable(unit) { return 0 }
 
 //external neg: t -> t
 //Provides: ml_z_neg const
@@ -179,25 +181,16 @@ function ml_z_shift_right_trunc(z1, z2) {
   return ml_z_div(bigInt(z1), bigInt(2).pow(z2))
 }
 
-//external of_int: int -> t
-//Provides: ml_z_of_int const
-//Requires: bigInt
-function ml_z_of_int(i) {
-  return i | 0;
-}
-
 //external of_int32: int32 -> t
 //Provides: ml_z_of_int32 const
-//Requires: ml_z_of_int
-function ml_z_of_int32(i32) {
-  return ml_z_of_int(i32);
+function ml_z_of_int32(i) {
+  return i | 0;
 }
 
 //external of_nativeint: nativeint -> t
 //Provides: ml_z_of_nativeint const
-//Requires: ml_z_of_int
-function ml_z_of_nativeint(z) {
-  return ml_z_of_int(z)
+function ml_z_of_nativeint(i) {
+  return i | 0;
 }
 
 //external of_int64: int64 -> t

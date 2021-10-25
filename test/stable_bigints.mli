@@ -1,1 +1,0 @@
-val all : string array
