@@ -764,6 +764,13 @@ function ml_z_extract(z1, pos, len) {
   return ml_z_normalize(z1.shiftRight(pos).and(bigInt(2).pow(len).subtract(1)));
 }
 
+//external extract_small: t -> int -> int -> t
+//Provides: ml_z_extract_small
+//Requires: ml_z_extract
+function ml_z_extract_small(z1, pos, len) {
+  return ml_z_extract(z1, pos, len);
+}
+
 //external gcdext_intern: t -> t -> (t * t * bool)
 //Provides: ml_z_gcdext_intern
 //Requires: bigInt, caml_raise_zero_divide, ml_z_normalize
