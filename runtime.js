@@ -803,8 +803,17 @@ function jsoo_bigint_rand_between(low, high) {
   let range = high - low + 1n;
   let base = 1e7, bigbase = BigInt(base);
   let result = 0n, restricted = true;
-  while (range > 0) {
-    let top = restricted ? Number(range % bigbase) | 0 : base;
+
+  let digits = [];
+  while (range >= bigbase) {
+    digits.push(Number(range % bigbase));
+    range /= bigbase;
+  }
+  digits.push(Number(range));
+  digits.reverse();
+
+  for (let i = 0; i < digits.length; i++) {
+    let top = restricted ? digits[i] | 0 : base;
     range /= bigbase;
     let digit = Math.floor(Math.random() * top);
     result *= bigbase;
@@ -884,7 +893,7 @@ function ml_z_nextprime(z1) {
 
   for (; ;) {
     if (ml_z_probab_prime(z1n, 25)) {
-      return ml_z_normalize(z1);
+      return ml_z_normalize(z1n);
     } else {
       z1n += 2n;
     }
@@ -996,7 +1005,7 @@ function ml_z_hamdist(z1, z2) {
   if ((z1 < 0) !== (z2 < 0)) {
     caml_raise_constant(caml_named_value("ml_z_overflow"));
   }
-  if (z1 < 0 || z2 < 0) {
+  if ((typeof z1 == 'bignum' || typeof z2 == 'bignum') && (z1 < 0 || z2 < 0)) {
     caml_invalid_argument("Z.hamdist: negative arguments");
   }
   return ml_z_popcount(BigInt(z1) ^ BigInt(z2));
@@ -1232,6 +1241,6 @@ function ml_z_bin(n, k) {
   k = BigInt(k);
   let coeff = 1n;
   for (let x = n - k + 1n; x <= n; x++) coeff *= x;
-  for (x = 1n; x <= k; x++) coeff /= x;
+  for (let x = 1n; x <= k; x++) coeff /= x;
   return ml_z_normalize(coeff);
 }
