@@ -1,0 +1,44 @@
+(library
+ (name zarith_stubs_js_test)
+ (libraries zarith core base.md5 zarith_stubs_js)
+ (flags :standard -w -60)
+ (preprocess
+  (pps ppx_jane)))
+
+(rule
+ (targets zarith_externals.txt)
+ (deps ../../../external/zarith/src/z.ml)
+ (action
+  (bash
+    "(cat %{deps} | grep -Eo '^external[^=]*= *\"[^\"]*' | grep -v \"identity\" | grep -v \"obj_is_int\" | sed 's/.*\"ml_z_//' | sort -u) > %{targets}")))
+
+(rule
+ (targets implemented_externals.txt)
+ (deps ../src/runtime.js)
+ (action
+  (bash
+    "(cat ../src/runtime.js | grep -o '//Provides: ml_z[^ ]*' | sed 's/\\/\\/Provides: ml_z_//' | grep -v 'fits_.*_unsigned' | grep -v 'to.*int.*unsigned' | grep -v normalize | grep -v extract_small | sort) > %{targets}")))
+
+(rule
+ (targets tested_externals.txt)
+ (deps
+  (glob_files *.ml))
+ (action
+  (bash
+    "(grep -E 'module Ml_z_[^ ]+' -o *.ml | cut -f 2 -d ' ' | sed 's/Ml_z_//' | sort) > %{targets}")))
+
+(alias
+ (name DEFAULT)
+ (deps tested_externals.txt implemented_externals.txt zarith_externals.txt))
+
+(rule
+ (alias runtest)
+ (deps implemented_externals.txt tested_externals.txt)
+ (action
+  (bash "diff %{deps}")))
+
+(rule
+ (alias runtest)
+ (deps implemented_externals.txt zarith_externals.txt)
+ (action
+  (bash "diff %{deps}")))
