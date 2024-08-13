@@ -94,11 +94,11 @@ end
 include Redefinitions
 
 module Make_random (State : sig
-  type t
+    type t
 
-  val bits : t -> int
-  val int : t -> int -> int
-end) : sig
+    val bits : t -> int
+    val int : t -> int -> int
+  end) : sig
   val random : state:State.t -> t -> t
 end = struct
   (* Uniform random generation of Bigint values.
@@ -176,11 +176,11 @@ end = struct
   open Generator.Let_syntax
 
   module Uniform = Make_random (struct
-    type t = Splittable_random.t
+      type t = Splittable_random.t
 
-    let int t range = Splittable_random.int t ~lo:0 ~hi:(Int.pred range)
-    let bits t = int t (Int.shift_left 1 30)
-  end)
+      let int t range = Splittable_random.int t ~lo:0 ~hi:(Int.pred range)
+      let bits t = int t (Int.shift_left 1 30)
+    end)
 
   let random_uniform ~state lo hi = lo + Uniform.random ~state (succ (hi - lo))
 

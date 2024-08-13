@@ -63,7 +63,7 @@ module Ml_z_shift_right_trunc = struct
       ~f:(fun x ->
         List.range 0 100
         |> List.map ~f:(fun y ->
-             [%message (x : t) (y : int) (Z.shift_right_trunc x y : t)])
+          [%message (x : t) (y : int) (Z.shift_right_trunc x y : t)])
         |> Sexp.List)
       ();
     [%expect {| ((hash 798c8f514381c4521966e3dd3ea93c1d) (uniqueness_rate 85.742188)) |}]

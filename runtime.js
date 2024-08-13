@@ -20,6 +20,10 @@
 
 //Provides: ml_z_normalize
 function ml_z_normalize(x) {
+  // This is the primary reason runtime and runtime_wasm are separate despite looking.
+  // very similar. JavaScript uses 32bit as its cutoff between number and BigInt, and
+  // WebAssembly uses 31bit. With some amount of effort we could merge a lot of this
+  // logic.
   if (typeof x === "number") {
     if (x === (x | 0)) return x;
 

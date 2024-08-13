@@ -7,8 +7,8 @@ module Ml_z_probab_prime = struct
       ~f:(fun x ->
         List.range 22 27
         |> List.map ~f:(fun i ->
-             let probab_prime x i = not (Int.equal (Z.probab_prime x i) 0) in
-             [%message (x : t) (i : int) (probab_prime x i : bool)])
+          let probab_prime x i = not (Int.equal (Z.probab_prime x i) 0) in
+          [%message (x : t) (i : int) (probab_prime x i : bool)])
         |> Sexp.List)
       ();
     [%expect {| ((hash 841bf3c0441e2a8f411a38399b51b11e) (uniqueness_rate 85.742188)) |}]
