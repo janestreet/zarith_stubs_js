@@ -675,7 +675,7 @@ function ml_z_powm_sec(z1, z2, z3) {
 
 //external root: t -> int -> t
 //Provides: ml_z_root
-//Requires: ml_z_pow, ml_z_normalize, caml_invalid_argument
+//Requires: ml_z_normalize, ml_z_numbits, caml_invalid_argument
 function ml_z_root(z, i) {
   if (i % 2 === 0 && z < 0) {
     caml_invalid_argument("Z.root: even root of a negative number");
@@ -684,57 +684,35 @@ function ml_z_root(z, i) {
   if (z == 0 || z == 1) {
     return Number(z) | 0;
   }
-
-  let start = 0n;
-  let end = BigInt(z);
-  let ans = 0n;
-
-  let bigi = BigInt(i);
-  while (start <= end) {
-    let mid = (start + end) / 2n;
-    let po = mid ** bigi;
-    if (po == z) {
-      return ml_z_normalize(mid);
-    } else if (po < z) {
-      start = mid + 1n;
-      ans = mid;
-    } else {
-      end = mid - 1n;
+  z = BigInt(z);
+  i = BigInt(i);
+  var log2z = ml_z_numbits(z);
+  var i_minus_1 = i - 1n;
+  // Start with an upper bound of the root
+  var x = 1n << ((BigInt(log2z) + i_minus_1) / i);
+  while (1) {
+    // Use Newton's method to get a better approximation of the root
+    var next = ((i_minus_1 * x) + (z / (x ** i_minus_1))) / i;
+    // The sequence is strictly decreasing until we reach the result
+    // See https://github.com/waldemarhorwat/integer-roots for a proof
+    if (x <= next) {
+      return ml_z_normalize(x);
     }
+    x = next
   }
-  return ml_z_normalize(ans);
 }
 
 //external rootrem: t -> int -> t * t
 //Provides: ml_z_rootrem
-//Requires: ml_z_pow, ml_z_normalize, caml_invalid_argument
+//Requires: ml_z_root, ml_z_normalize, caml_invalid_argument
 function ml_z_rootrem(z, i) {
   if (i % 2 === 0 && z < 0) {
     caml_invalid_argument("Z.rootrem: even root of a negative number");
   }
 
-  if (z == 0 || z === 1) {
-    return [0, Number(z) | 0, 0];
-  }
+  let ans = ml_z_root(z, i);
 
-  let start = 0n;
-  let end = BigInt(z);
-  let ans = 0n;
-
-  let bigi = BigInt(i);
-  while (start <= end) {
-    let mid = (start + end) / 2n;
-    let po = mid ** bigi;
-    if (po == z) {
-      return [0, ml_z_normalize(mid), 0];
-    } else if (po < z) {
-      start = mid + 1n;
-      ans = mid;
-    } else {
-      end = mid - 1n;
-    }
-  }
-  return [0, ml_z_normalize(ans), ml_z_normalize(BigInt(z) - (ans ** bigi))];
+  return [0, ans, ml_z_normalize(BigInt(z) - (BigInt(ans) ** BigInt(i)))];
 }
 
 //external invert: t -> t -> t

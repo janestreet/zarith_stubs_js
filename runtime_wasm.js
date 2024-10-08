@@ -421,29 +421,27 @@ function wasm_z_of_bits(s) {
 }
 
 //Provides: wasm_z_root
-//Requires: wasm_z_normalize
+//Requires: wasm_z_normalize, wasm_z_numbits
 function wasm_z_root(z, i) {
   if (z == 0 || z == 1) {
     return z;
   }
   z = BigInt(z);
   i = BigInt(i);
-  var start = 0n;
-  var end = z;
-  var ans = 0n;
-  while (start <= end) {
-    var mid = (start + end) >> 1n;
-    var po = mid ** i;
-    if (po == z) {
-      return wasm_z_normalize(mid);
-    } else if (po < z) {
-      start = mid + 1n;
-      ans = mid;
-    } else {
-      end = mid - 1n;
-    }
+  var log2z = wasm_z_numbits(z);
+  var i_minus_1 = i - 1n;
+  // Start with an upper bound of the root
+  var x = 1n << ((BigInt(log2z) + i_minus_1) / i);
+  while (1) {
+      // Use Newton's method to get a better approximation of the root
+      var next = ((i_minus_1 * x) + (z / (x ** i_minus_1))) / i;
+      // The sequence is strictly decreasing until we reach the result
+      // See https://github.com/waldemarhorwat/integer-roots for a proof
+      if (x <= next) {
+          return wasm_z_normalize(x);
+      }
+      x = next
   }
-  return wasm_z_normalize(ans);
 }
 
 //Provides: wasm_z_invert
