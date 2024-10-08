@@ -81,20 +81,20 @@ module Ml_z_of_substring_base = struct
       ~f:(fun x ->
         [ 2, "b"; 8, "o"; 10, "d"; 16, "x" ]
         |> List.map ~f:(fun (i, f) ->
-             let string = Z.format f x in
-             let string_dropped n =
-               let n = Int.min n (String.length string) in
-               String.sub string ~pos:n ~len:(Int.( - ) (String.length string) n)
-             in
-             try
-               [%message
-                 (i : int)
-                   (string : string)
-                   (string_dropped 2 : string)
-                   (Z.of_substring_base i (string_dropped 2) ~pos:1 ~len:4 : t)
-                   (Z.of_substring_base 0 string ~pos:0 ~len:4 : t)]
-             with
-             | exn -> Sexp.Atom (Exn.to_string exn))
+          let string = Z.format f x in
+          let string_dropped n =
+            let n = Int.min n (String.length string) in
+            String.sub string ~pos:n ~len:(Int.( - ) (String.length string) n)
+          in
+          try
+            [%message
+              (i : int)
+                (string : string)
+                (string_dropped 2 : string)
+                (Z.of_substring_base i (string_dropped 2) ~pos:1 ~len:4 : t)
+                (Z.of_substring_base 0 string ~pos:0 ~len:4 : t)]
+          with
+          | exn -> Sexp.Atom (Exn.to_string exn))
         |> Sexp.List)
       ();
     [%expect {| ((hash 6e19ad54e13932775b7dcb252f2460c6) (uniqueness_rate 81.25)) |}]
@@ -105,9 +105,9 @@ module Ml_z_of_substring_base = struct
       ~f:(fun x ->
         [ 2, "b"; 8, "o"; 10, "d"; 16, "x" ]
         |> List.map ~f:(fun (i, f) ->
-             let formatted = Z.format f x in
-             let parsed = Z.of_string_base i formatted in
-             [%message (x : t) (i : int) (f : string) (formatted : string) (parsed : t)])
+          let formatted = Z.format f x in
+          let parsed = Z.of_string_base i formatted in
+          [%message (x : t) (i : int) (f : string) (formatted : string) (parsed : t)])
         |> Sexp.List)
       ();
     [%expect {| ((hash 5accf29c4669d527bd5779447b54dab1) (uniqueness_rate 85.742188)) |}]

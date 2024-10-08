@@ -188,7 +188,8 @@ module Ml_z_congruent = struct
     printf "%b\n" Zarith.(Z.congruent Z.zero Z.zero Z.zero);
     printf "%b\n" Zarith.(Z.congruent (Z.of_int 1) (Z.of_int 1) Z.zero);
     printf "%b\n" Zarith.(Z.congruent (Z.of_int 2) (Z.of_int 4) Z.zero);
-    [%expect {|
+    [%expect
+      {|
       true
       true
       false
