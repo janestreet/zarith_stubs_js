@@ -236,8 +236,7 @@ module Ml_z_perfect_power = struct
       1
   ;;
 
-  (* Disable this test in javascript as it takes more than 2 minutes to complete. *)
-  let%expect_test ("print (x, perfect_power x)" [@tags "no-js"]) =
+  let%expect_test "print (x, perfect_power x)" =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (perfect_power x : bool)]) ();
     [%expect "((hash ec1b6a78eea1217d5ec7ea0e85eafaef) (uniqueness_rate 85.742188))"]
   ;;
