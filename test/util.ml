@@ -46,14 +46,11 @@ end
 
 module Static = struct
   (** For non-random input, the functions in this module read from the
-      "stable-bigints.txt" file, run the requested computation, and then
-      sexpify the results and print the hash of that result.  This is here
-      solely to verify that the Javascript and C implementations produce
-      the same (hashed) output.
+      "stable-bigints.txt" file, run the requested computation, and then sexpify the
+      results and print the hash of that result. This is here solely to verify that the
+      Javascript and C implementations produce the same (hashed) output.
 
-      If a test fails, toggle the [?verbose] argument to [true] and diff
-      the output.
-  *)
+      If a test fails, toggle the [?verbose] argument to [true] and diff the output. *)
 
   let () =
     let regenerate_stable_quickcheck_file =

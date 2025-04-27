@@ -5,4 +5,8 @@
   (javascript_files ./runtime.js)
   (flags --no-sourcemap))
  (libraries)
- (preprocess no_preprocessing))
+ (preprocess no_preprocessing)
+ (wasm_of_ocaml
+  (javascript_files ./runtime.js)
+  (wasm_files runtime_wasm.js runtime.wat)
+  (flags --no-sourcemap)))
