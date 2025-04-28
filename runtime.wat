@@ -148,7 +148,7 @@
       (func $caml_raise_constant (param (ref eq))))
    (import "env" "caml_raise_zero_divide" (func $caml_raise_zero_divide))
    (import "env" "caml_named_value"
-      (func $caml_named_value (param (ref $string)) (result eqref)))
+      (func $caml_named_value (param (ref eq)) (result (ref null eq))))
    (import "env" "caml_copy_int32"
       (func $caml_copy_int32 (param i32) (result (ref eq))))
    (import "env" "caml_copy_nativeint"
