@@ -32,13 +32,13 @@
  (deps tested_externals.txt implemented_externals.txt zarith_externals.txt))
 
 (rule
- (alias runtest)
  (deps implemented_externals.txt tested_externals.txt)
  (action
-  (bash "diff %{deps}")))
+  (bash "diff %{deps}"))
+ (alias runtest))
 
 (rule
- (alias runtest)
  (deps implemented_externals.txt zarith_externals.txt)
  (action
-  (bash "diff %{deps}")))
+  (bash "diff %{deps}"))
+ (alias runtest))
