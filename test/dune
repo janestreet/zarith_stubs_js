@@ -28,7 +28,7 @@
     "(grep -E 'module Ml_z_[^ ]+' -o *.ml | cut -f 2 -d ' ' | sed 's/Ml_z_//' | sort) > %{targets}")))
 
 (alias
- (name DEFAULT)
+ (name default)
  (deps tested_externals.txt implemented_externals.txt zarith_externals.txt))
 
 (rule
