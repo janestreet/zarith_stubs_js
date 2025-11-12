@@ -1,6 +1,6 @@
 (library
  (name zarith_stubs_js_test)
- (libraries zarith core base.md5 zarith_stubs_js)
+ (libraries core base.md5 zarith_stubs_js zarith)
  (flags :standard -w -60)
  (preprocess
   (pps ppx_jane)))
