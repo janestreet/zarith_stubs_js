@@ -84,8 +84,8 @@ end
 module Ml_z_popcount = struct
   let%expect_test "print x, popcnt x" =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (popcount x : int)]) ();
-    (* Compression rate is low because our quickcheck implementation generates
-       integers with a bounded bitcount. *)
+    (* Compression rate is low because our quickcheck implementation generates integers
+       with a bounded bitcount. *)
     [%expect {| ((hash 1e429706c701b111d98b6e6e858bbea4) (uniqueness_rate 42.96875)) |}]
   ;;
 end
@@ -100,8 +100,8 @@ module Ml_z_hamdist = struct
         then [%message (x : t) (y : t) (hamdist x y : int)]
         else [%message "special"])
       ();
-    (* Compression rate is low because our quickcheck implementation generates
-       integers with a bounded bitcount. *)
+    (* Compression rate is low because our quickcheck implementation generates integers
+       with a bounded bitcount. *)
     [%expect {| ((hash 0a270232628736ee7d47c8b403250989) (uniqueness_rate 33.284457)) |}]
   ;;
 end

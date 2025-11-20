@@ -104,12 +104,12 @@ end = struct
   (* Uniform random generation of Bigint values.
 
      [random ~state range] chooses a [depth] and generates random values using
-     [Random.State.bits state], called [1 lsl depth] times and concatenated.  The
+     [Random.State.bits state], called [1 lsl depth] times and concatenated. The
      preliminary result [n] therefore satisfies [0 <= n < 1 lsl (30 lsl depth)].
 
      In order for the random choice to be uniform between [0] and [range-1], there must
-     exist [k > 0] such that [n < k * range <= 1 lsl (30 lsl depth)].  If so, [n % range]
-     is returned.  Otherwise the random choice process is repeated from scratch.
+     exist [k > 0] such that [n < k * range <= 1 lsl (30 lsl depth)]. If so, [n % range]
+     is returned. Otherwise the random choice process is repeated from scratch.
 
      The [depth] value is chosen so that repeating is uncommon (1 in 1,000 or less). *)
 
