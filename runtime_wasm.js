@@ -350,9 +350,19 @@ function wasm_z_fits_int32(z) {
   return +(z == BigInt.asIntN(32, z));
 }
 
+//Provides: wasm_z_fits_int32_unsigned const
+function wasm_z_fits_int32_unsigned(z) {
+  return +(z == BigInt.asUintN(32, z));
+}
+
 //Provides: wasm_z_fits_int64 const
 function wasm_z_fits_int64(z) {
   return +(z == BigInt.asIntN(64, z));
+}
+
+//Provides: wasm_z_fits_int64_unsigned const
+function wasm_z_fits_int64_unsigned(z) {
+  return +(z == BigInt.asUintN(64, z));
 }
 
 //Provides: wasm_z_powm
