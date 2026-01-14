@@ -137,7 +137,7 @@ module Ml_z_powm_sec = struct
   let%expect_test "FILTERED print x y z, powm_sec x y z" =
     Static.quickcheck_tripple
       ~filter:Filter.(combine [ odd; positive ])
-        (* Filter to get a better uniqueness rate*)
+        (* Filter to get a better uniqueness rate *)
       ~f:(fun x y z -> [%message (x : t) (y : t) (z : t) (powm_sec x y z : t)])
       ();
     [%expect {| ((hash 571382f34276e42f2a65e217aee6e69e) (uniqueness_rate 99.790795)) |}]
