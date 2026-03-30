@@ -59,8 +59,12 @@
       (func $gcd (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "wasm_z_fits_int32"
       (func $fits_int32 (param (ref any)) (result i32)))
+   (import "js" "wasm_z_fits_int32_unsigned"
+      (func $fits_uint32 (param (ref any)) (result i32)))
    (import "js" "wasm_z_fits_int64"
       (func $fits_int64 (param (ref any)) (result i32)))
+   (import "js" "wasm_z_fits_int64_unsigned"
+      (func $fits_uint64 (param (ref any)) (result i32)))
    (import "js" "wasm_z_powm"
       (func $powm
          (param (ref any)) (param (ref any)) (param (ref any))
@@ -491,6 +495,18 @@
          (then (call $ml_z_raise_overflow)))
       (return_call $caml_copy_int32 (call $to_int32 (local.get $z'))))
 
+   (func (export "ml_z_to_int32_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (local $z' (ref any))
+      (drop (block $large (result (ref eq))
+         (return_call $caml_copy_int32
+            (i31.get_s
+               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
+      (local.set $z' (call $unwrap_bigint (local.get $z)))
+      (if (i32.eqz (call $fits_uint32 (local.get $z')))
+         (then (call $ml_z_raise_overflow)))
+      (return_call $caml_copy_int32 (call $to_int32 (local.get $z'))))
+
    (func (export "ml_z_to_nativeint")
       (param $z (ref eq)) (result (ref eq))
       (local $z' (ref any))
@@ -500,6 +516,18 @@
                (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
       (local.set $z' (call $unwrap_bigint (local.get $z)))
       (if (i32.eqz (call $fits_int32 (local.get $z')))
+         (then (call $ml_z_raise_overflow)))
+      (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
+
+   (func (export "ml_z_to_nativeint_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (local $z' (ref any))
+      (drop (block $large (result (ref eq))
+         (return_call $caml_copy_nativeint
+            (i31.get_s
+               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
+      (local.set $z' (call $unwrap_bigint (local.get $z)))
+      (if (i32.eqz (call $fits_uint32 (local.get $z')))
          (then (call $ml_z_raise_overflow)))
       (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
 
@@ -514,6 +542,20 @@
                      (local.get $z)))))))
       (local.set $z' (call $unwrap_bigint (local.get $z)))
       (if (i32.eqz (call $fits_int64 (local.get $z')))
+         (then (call $ml_z_raise_overflow)))
+      (return_call $caml_copy_int64 (call $to_int64 (local.get $z'))))
+
+   (func (export "ml_z_to_int64_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (local $z' (ref any))
+      (drop (block $large (result (ref eq))
+         (return_call $caml_copy_int64
+            (i64.extend_i32_s
+               (i31.get_s
+                  (br_on_cast_fail $large (ref eq) (ref i31)
+                     (local.get $z)))))))
+      (local.set $z' (call $unwrap_bigint (local.get $z)))
+      (if (i32.eqz (call $fits_uint64 (local.get $z')))
          (then (call $ml_z_raise_overflow)))
       (return_call $caml_copy_int64 (call $to_int64 (local.get $z'))))
 
@@ -685,17 +727,35 @@
          (then (return (ref.i31 (i32.const 1)))))
       (ref.i31 (call $fits_int32 (call $unwrap_bigint (local.get $z)))))
 
+   (func (export "ml_z_fits_int32_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (if (ref.test (ref i31) (local.get $z))
+         (then (return (ref.i31 (i32.const 1)))))
+      (ref.i31 (call $fits_uint32 (call $unwrap_bigint (local.get $z)))))
+
    (func (export "ml_z_fits_nativeint")
       (param $z (ref eq)) (result (ref eq))
       (if (ref.test (ref i31) (local.get $z))
          (then (return (ref.i31 (i32.const 1)))))
       (ref.i31 (call $fits_int32 (call $unwrap_bigint (local.get $z)))))
 
+   (func (export "ml_z_fits_nativeint_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (if (ref.test (ref i31) (local.get $z))
+         (then (return (ref.i31 (i32.const 1)))))
+      (ref.i31 (call $fits_uint32 (call $unwrap_bigint (local.get $z)))))
+
    (func (export "ml_z_fits_int64")
       (param $z (ref eq)) (result (ref eq))
       (if (ref.test (ref i31) (local.get $z))
          (then (return (ref.i31 (i32.const 1)))))
       (ref.i31 (call $fits_int64 (call $unwrap_bigint (local.get $z)))))
+
+   (func (export "ml_z_fits_int64_unsigned")
+      (param $z (ref eq)) (result (ref eq))
+      (if (ref.test (ref i31) (local.get $z))
+         (then (return (ref.i31 (i32.const 1)))))
+      (ref.i31 (call $fits_uint64 (call $unwrap_bigint (local.get $z)))))
 
    (func (export "ml_z_powm")
       (param $base (ref eq)) (param $exp (ref eq)) (param $mod (ref eq))
