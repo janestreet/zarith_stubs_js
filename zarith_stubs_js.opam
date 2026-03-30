@@ -6,6 +6,7 @@ bug-reports: "https://github.com/janestreet/zarith_stubs_js/issues"
 dev-repo: "git+https://github.com/janestreet/zarith_stubs_js.git"
 doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/zarith_stubs_js/index.html"
 license: "MIT"
+x-maintenance-intent: ["(latest)"]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
