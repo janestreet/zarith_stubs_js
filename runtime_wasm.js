@@ -350,9 +350,19 @@ function wasm_z_fits_int32(z) {
   return +(z == BigInt.asIntN(32, z));
 }
 
+//Provides: wasm_z_fits_int32_unsigned const
+function wasm_z_fits_int32_unsigned(z) {
+  return +(z == BigInt.asUintN(32, z));
+}
+
 //Provides: wasm_z_fits_int64 const
 function wasm_z_fits_int64(z) {
   return +(z == BigInt.asIntN(64, z));
+}
+
+//Provides: wasm_z_fits_int64_unsigned const
+function wasm_z_fits_int64_unsigned(z) {
+  return +(z == BigInt.asUintN(64, z));
 }
 
 //Provides: wasm_z_powm
@@ -433,14 +443,14 @@ function wasm_z_root(z, i) {
   // Start with an upper bound of the root
   var x = 1n << ((BigInt(log2z) + i_minus_1) / i);
   while (1) {
-      // Use Newton's method to get a better approximation of the root
-      var next = ((i_minus_1 * x) + (z / (x ** i_minus_1))) / i;
-      // The sequence is strictly decreasing until we reach the result
-      // See https://github.com/waldemarhorwat/integer-roots for a proof
-      if (x <= next) {
-          return wasm_z_normalize(x);
-      }
-      x = next
+    // Use Newton's method to get a better approximation of the root
+    var next = ((i_minus_1 * x) + (z / (x ** i_minus_1))) / i;
+    // The sequence is strictly decreasing until we reach the result
+    // See https://github.com/waldemarhorwat/integer-roots for a proof
+    if (x <= next) {
+      return wasm_z_normalize(x);
+    }
+    x = next
   }
 }
 

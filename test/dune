@@ -1,12 +1,13 @@
 (library
  (name zarith_stubs_js_test)
- (libraries core base.md5 zarith_stubs_js zarith)
+ (libraries zarith_stubs_js core base.md5 zarith)
  (flags :standard -w -60)
  (preprocess
-  (pps ppx_jane)))
+  (pps ppx_jane -compare-require-explicit-locality)))
 
 (rule
  (targets zarith_externals.txt)
+ (alias default)
  (deps ../../../external/zarith/src/z.ml)
  (action
   (bash
@@ -14,6 +15,7 @@
 
 (rule
  (targets implemented_externals.txt)
+ (alias default)
  (deps ../src/runtime.js)
  (action
   (bash
@@ -21,15 +23,12 @@
 
 (rule
  (targets tested_externals.txt)
+ (alias default)
  (deps
   (glob_files *.ml))
  (action
   (bash
     "(grep -E 'module Ml_z_[^ ]+' -o *.ml | cut -f 2 -d ' ' | sed 's/Ml_z_//' | sort) > %{targets}")))
-
-(alias
- (name default)
- (deps tested_externals.txt implemented_externals.txt zarith_externals.txt))
 
 (rule
  (deps implemented_externals.txt tested_externals.txt)
