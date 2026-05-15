@@ -18,20 +18,25 @@
 // a way that doesn't respect these invariants, and so some functions can see
 // non-normalized numbers as input.
 
+//If: !wasm
 //Provides: ml_z_normalize
 function ml_z_normalize(x) {
-  // This is the primary reason runtime and runtime_wasm are separate despite looking.
-  // very similar. JavaScript uses 32bit as its cutoff between number and BigInt, and
-  // WebAssembly uses 31bit. With some amount of effort we could merge a lot of this
-  // logic.
   if (typeof x === "number") {
     if (x === (x | 0)) return x;
-
     return BigInt(x);
   }
-
   if (-2147483648 <= x && x <= 2147483647) return Number(x) | 0;
   return x;
+}
+
+//If: wasm
+//Provides: ml_z_normalize
+function ml_z_normalize(x) {
+  if (typeof x === "number") {
+    if (x === ((x << 1) >> 1)) return x;
+    return BigInt(x);
+  }
+  return (x == BigInt.asIntN(31, x)) ? Number(x) : x;
 }
 
 //external mul_overflows: int -> int -> bool
@@ -87,46 +92,34 @@ function ml_z_mul(z1, z2) {
 
 //external div: t -> t -> t
 //Provides: ml_z_div
-//Requires: caml_raise_zero_divide, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_div
 function ml_z_div(z1, z2) {
   if (z2 == 0) caml_raise_zero_divide();
-  return ml_z_normalize(BigInt(z1) / BigInt(z2));
+  return jsoo_z_div(z1, z2);
 }
 
 //external cdiv: t -> t -> t
 //Provides: ml_z_cdiv
-//Requires: ml_z_div, ml_z_sign, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_cdiv
 function ml_z_cdiv(z1, z2) {
-  let z1_pos = ml_z_sign(z1);
-  let z2_pos = ml_z_sign(z2);
-  if (z1_pos * z2_pos > 0) /* Multiplication is like a signwise xor */ {
-    if (BigInt(z1) % BigInt(z2) !== 0n) {
-      return ml_z_normalize(BigInt(z1) / BigInt(z2) + 1n);
-    }
-  }
-  return ml_z_div(z1, z2);
+  if (z2 == 0) caml_raise_zero_divide();
+  return jsoo_z_cdiv(z1, z2);
 }
 
 //external fdiv: t -> t -> t
 //Provides: ml_z_fdiv
-//Requires: ml_z_div, ml_z_sign, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_fdiv
 function ml_z_fdiv(z1, z2) {
-  let z1_pos = ml_z_sign(z1);
-  let z2_pos = ml_z_sign(z2);
-  if (z1_pos * z2_pos < 0) /* Multiplication is like a signwise xor */ {
-    if (BigInt(z1) % BigInt(z2) !== 0n) {
-      return ml_z_normalize(BigInt(z1) / BigInt(z2) - 1n);
-    }
-  }
-  return ml_z_div(z1, z2);
+  if (z2 == 0) caml_raise_zero_divide();
+  return jsoo_z_fdiv(z1, z2);
 }
 
 //external rem: t -> t -> t
 //Provides: ml_z_rem
-//Requires: caml_raise_zero_divide, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_rem
 function ml_z_rem(z1, z2) {
   if (z2 == 0) caml_raise_zero_divide();
-  return ml_z_normalize(BigInt(z1) % BigInt(z2));
+  return jsoo_z_rem(z1, z2);
 }
 
 //external div_rem: t -> t -> (t * t)
@@ -237,11 +230,11 @@ function ml_z_of_int64(i64) {
 
 //external of_float: float -> t
 //Provides: ml_z_of_float
-//Requires: caml_raise_constant, caml_named_value, ml_z_normalize
+//Requires: caml_raise_constant, caml_named_value, jsoo_z_of_float
 function ml_z_of_float(f1) {
   if (f1 == Infinity || f1 == -Infinity || f1 != f1)
     caml_raise_constant(caml_named_value("ml_z_overflow"));
-  return ml_z_normalize(f1 < 0 ? Math.ceil(f1) : Math.floor(f1));
+  return jsoo_z_of_float(f1);
 }
 
 //external to_int: t -> int
@@ -321,131 +314,18 @@ function ml_z_to_nativeint(z1) { return ml_z_to_int(z1) }
 //external format: string -> t -> string
 //Provides: ml_z_format
 //Requires: caml_jsbytes_of_string, caml_failwith, caml_string_of_jsbytes
-//Requires: ml_z_normalize
+//Requires: jsoo_z_format
 function ml_z_format(fmt, z1) {
-  let z1n = BigInt(z1);
   fmt = caml_jsbytes_of_string(fmt);
-  // https://github.com/ocaml/Zarith/blob/d0555d451ce295c4497f24a8d9993f8dd23097df/z.mlip#L297
-  let base = 10;
-  let cas = 0;
-  let width = 0;
-  let alt = 0;
-  let dir = 0;
-  let sign = '';
-  let pad = ' ';
-  let idx = 0;
-  let prefix = "";
-  while (fmt[idx] == '%') idx++;
-  for (; ; idx++) {
-    if (fmt[idx] == '#') alt = 1;
-    else if (fmt[idx] == '0') pad = '0';
-    else if (fmt[idx] == '-') dir = 1;
-    else if (fmt[idx] == ' ' || fmt[idx] == '+') sign = fmt[idx];
-    else break;
-  }
-  if (z1n < 0) { sign = '-'; z1n = -z1n }
-  for (; fmt[idx] >= '0' && fmt[idx] <= '9'; idx++)
-    width = 10 * width + (+fmt[idx]);
-  switch (fmt[idx]) {
-    case 'i': case 'd': case 'u': break;
-    case 'b': base = 2; if (alt) prefix = "0b"; break;
-    case 'o': base = 8; if (alt) prefix = "0o"; break;
-    case 'x': base = 16; if (alt) prefix = "0x"; break;
-    case 'X': base = 16; if (alt) prefix = "0X"; cas = 1; break;
-    default:
-      caml_failwith("Unsupported format '" + fmt + "'");
-  }
-  if (dir) pad = ' ';
-  let res = z1n.toString(base);
-  if (cas === 1) {
-    res = res.toUpperCase();
-  }
-  let size = res.length;
-  if (pad == ' ') {
-    if (dir) {
-      res = sign + prefix + res;
-      for (; res.length < width;) res = res + pad;
-    } else {
-      res = sign + prefix + res;
-      for (; res.length < width;) res = pad + res;
-    }
-  } else {
-    let pre = sign + prefix;
-    for (; res.length + pre.length < width;) res = pad + res;
-    res = pre + res;
-  }
+  let res = jsoo_z_format(fmt, BigInt(z1));
+  if (res === -1) caml_failwith("Unsupported format '" + fmt + "'");
   return caml_string_of_jsbytes(res);
-}
-
-//Provides: jsoo_z_of_js_string_base
-//Requires: caml_invalid_argument, ml_z_normalize
-function jsoo_z_of_js_string_base(base, s) {
-  if (base == 0) { // https://github.com/ocaml/Zarith/blob/b8dbaf48a7927061df699ad7ce642bb4f1fe5308/caml_z.c#L598
-    base = 10;
-    let p = 0;
-    let sign = 1;
-    if (s[p] == '-') { sign = -1; p++ }
-    else if (s[p] == '+') { p++ }
-    if (s[p] == '0') {
-      p++;
-      if (s.length == p) {
-        return 0;
-      } else {
-        let bc = s[p];
-        if (bc == 'o' || bc == 'O') {
-          base = 8;
-        } else if (bc == 'x' || bc == 'X') {
-          base = 16;
-        } else if (bc == 'b' || bc == 'B') {
-          base = 2;
-        }
-        if (base != 10) {
-          s = s.substring(p + 1);
-          if (sign == -1) s = "-" + s;
-        }
-      }
-    }
-  }
-
-  function digit(code) {
-    if (code >= 48 && code <= 57) return code - 48;
-    if (code >= 97 && code <= 102) return code - 97 + 10;
-    if (code >= 65 && code <= 70) return code - 65 + 10;
-  }
-  let i = 0;
-  if (s[i] == '+') {
-    //remove leading '+'
-    s = s.substring(1);
-  }
-  else if (s[i] == '-') i++;
-  if (s[i] == '_') caml_invalid_argument("Z.of_substring_base: invalid digit");
-  s = s.replace(/_/g, '');
-  //normalize "empty" numbers
-  if (s == '-' || s == '') s = '0';
-  for (; i < s.length; i++) {
-    let c = digit(s.charCodeAt(i));
-    if (c == undefined || c >= base)
-      caml_invalid_argument("Z.of_substring_base: invalid digit");
-  }
-
-  if (base === 10) return ml_z_normalize(BigInt(s));
-
-  let neg = false;
-  i = 0;
-  if (s[i] == '-') { neg = true; i++; }
-  let n = 0n;
-  for (; i < s.length; i++) {
-    n *= BigInt(base);
-    n += BigInt(digit(s.charCodeAt(i)));
-  }
-  if (neg) n = -n;
-  return ml_z_normalize(n);
 }
 
 //external of_substring_base: int -> string -> pos:int -> len:int -> t
 //Provides: ml_z_of_substring_base
 //Requires: jsoo_z_of_js_string_base, caml_jsbytes_of_string
-//Requires: caml_invalid_argument, caml_ml_string_length
+//Requires: caml_invalid_argument
 function ml_z_of_substring_base(base, s, pos, len) {
   s = caml_jsbytes_of_string(s);
   if (pos != 0 || len != s.length) {
@@ -454,7 +334,9 @@ function ml_z_of_substring_base(base, s, pos, len) {
     }
     s = s.slice(pos, pos + len);
   }
-  return jsoo_z_of_js_string_base(base, s);
+  let res = jsoo_z_of_js_string_base(base, s);
+  if (res === null) caml_invalid_argument("Z.of_substring_base: invalid digit");
+  return res;
 }
 
 //external compare: t -> t -> int
@@ -573,23 +455,12 @@ function ml_z_fits_nativeint(z1) {
 
 //external powm: t -> t -> t -> t
 //Provides: ml_z_powm
-//Requires: ml_z_normalize, ml_z_invert, caml_raise_zero_divide
-//Requires: jsoo_bigint_mod_pow
+//Requires: caml_raise_zero_divide, jsoo_z_powm
 function ml_z_powm(z1, z2, z3) {
   if (z3 == 0) caml_raise_zero_divide();
   if (z3 == 1 || z3 == -1) return 0;
   if (z2 == 0) return 1;
-  let z3n = BigInt(z3);
-  if (z2 < 0) {
-    let inv = BigInt(ml_z_invert(z1, z3));
-    let r = jsoo_bigint_mod_pow(inv, BigInt(-z2), z3n);
-    if (r < 0) r = r + (z3n < 0 ? -z3n : z3n);
-    return ml_z_normalize(r);
-  } else {
-    let r = jsoo_bigint_mod_pow(BigInt(z1), BigInt(z2), z3n);
-    if (r < 0) r = r + (z3n < 0 ? -z3n : z3n);
-    return ml_z_normalize(r);
-  }
+  return jsoo_z_powm(z1, z2, z3);
 }
 
 //external pown: t -> t -> t
@@ -629,33 +500,16 @@ function ml_z_hash(z1) {
 
 //external to_bits: t -> string
 //Provides: ml_z_to_bits const
-//Requires: caml_string_of_jsbytes, caml_str_repeat
+//Requires: caml_string_of_jsbytes, jsoo_z_to_bits
 function ml_z_to_bits(z1) {
-  let z1n = BigInt(z1);
-  if (z1n < 0) z1n = -z1n;
-  let res = "";
-  while (z1n !== 0n) {
-    res += String.fromCharCode(Number(z1n % 256n) | 0);
-    z1n /= 256n;
-  }
-  while (res.length % 4 != 0) {
-    res += String.fromCharCode(0);
-  }
-  return caml_string_of_jsbytes(res);
+  return caml_string_of_jsbytes(jsoo_z_to_bits(BigInt(z1)));
 }
 
 //external of_bits: string -> t
 //Provides: ml_z_of_bits const
-//Requires: caml_string_unsafe_get, caml_ml_string_length, ml_z_normalize
+//Requires: caml_jsbytes_of_string, jsoo_z_of_bits
 function ml_z_of_bits(z1) {
-  let r = 0n;
-  let base = 1n;
-  for (let i = 0; i < caml_ml_string_length(z1); i++) {
-    let d = caml_string_unsafe_get(z1, i);
-    r += base * BigInt(d);
-    base *= 256n;
-  }
-  return ml_z_normalize(r);
+  return jsoo_z_of_bits(caml_jsbytes_of_string(z1));
 }
 
 //external powm_sec: t -> t -> t -> t
@@ -717,30 +571,14 @@ function ml_z_rootrem(z, i) {
 
 //external invert: t -> t -> t
 //Provides: ml_z_invert
-//Requires: caml_raise_zero_divide, ml_z_gcdext_intern, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_invert
 function ml_z_invert(a, n) {
-  // Because [a.modInv(n)] produces different results for edge cases,
-  // we wrote our own implementation based on gcdext_intern.
-  if (n == 1 || n == -1)
-    return 0;
-  if (n == 0 && (a == 1 || a == -1)) {
-    return a;
-  }
-  if (n == 0 || a == 0) {
-    caml_raise_zero_divide();
-  }
-  let x = ml_z_gcdext_intern(a, n);
-  let r = BigInt(x[2]);
-  a = BigInt(a);
-  n = BigInt(n);
-  if (n < 0) n = -n;
-  let tmp = (a * r) % n;
-  if (tmp < 0) tmp += n;
-  if (r < 0) r += n;
-  if (tmp == 1) {
-    return ml_z_normalize(r);
-  }
-  caml_raise_zero_divide();
+  if (n == 1 || n == -1) return 0;
+  if (n == 0 && (a == 1 || a == -1)) return a;
+  if (n == 0 || a == 0) caml_raise_zero_divide();
+  let r = jsoo_z_invert(a, n);
+  if (r === null) caml_raise_zero_divide();
+  return r;
 }
 
 //external perfect_power: t -> bool
@@ -897,32 +735,11 @@ function ml_z_extract_small(z1, pos, len) {
 
 //external gcdext_intern: t -> t -> (t * t * bool)
 //Provides: ml_z_gcdext_intern
-//Requires: caml_raise_zero_divide, ml_z_normalize
+//Requires: caml_raise_zero_divide, jsoo_z_gcdext_intern
 function ml_z_gcdext_intern(z1, z2) {
   if (z1 == 0) caml_raise_zero_divide();
-  let a = BigInt(z1);
-  let b = BigInt(z2);
-  let x = 0n;
-  let lastx = 1n;
-  let y = 1n;
-  let lasty = 1n;
-  let q, t, r;
-  while (b !== 0n) {
-    q = a / b;
-    r = a - q * b;
-    t = x;
-    x = lastx - q * x;
-    lastx = t;
-    t = y;
-    y = lasty - q * y;
-    lasty = t;
-    a = b;
-    b = r;
-  }
-  if (a < 0)
-    return [0, ml_z_normalize(-a), ml_z_normalize(-lastx), 1]
-  else
-    return [0, ml_z_normalize(a), ml_z_normalize(lastx), 1]
+  let res = jsoo_z_gcdext_intern(z1, z2);
+  return [0, res[0], res[1], 1];
 }
 
 //external sqrt: t -> t
@@ -965,32 +782,21 @@ function ml_z_trailing_zeros(z) {
 
 //external popcount: t -> int
 //Provides: ml_z_popcount
-//Requires: caml_raise_constant, caml_named_value
+//Requires: caml_raise_constant, caml_named_value, jsoo_z_popcount
 function ml_z_popcount(z) {
-  if (z < 0) {
-    caml_raise_constant(caml_named_value("ml_z_overflow"));
-  }
-  z = BigInt(z);
-  let i;
-  for (i = 0; z !== 0n; i++) {
-    z &= z - 1n;
-  }
+  if (z < 0) caml_raise_constant(caml_named_value("ml_z_overflow"));
+  let i = jsoo_z_popcount(BigInt(z));
   if (i !== (i | 0)) caml_raise_constant(caml_named_value("ml_z_overflow"));
   return i | 0;
 }
 
 //external hamdist: t -> t -> int
 //Provides: ml_z_hamdist
-//Requires: ml_z_popcount, caml_invalid_argument, caml_raise_constant
-//Requires: caml_named_value, ml_z_normalize
+//Requires: jsoo_z_hamdist, caml_raise_constant, caml_named_value
 function ml_z_hamdist(z1, z2) {
-  if ((z1 < 0) !== (z2 < 0)) {
+  if ((z1 < 0) !== (z2 < 0))
     caml_raise_constant(caml_named_value("ml_z_overflow"));
-  }
-  if ((typeof z1 == 'bignum' || typeof z2 == 'bignum') && (z1 < 0 || z2 < 0)) {
-    caml_invalid_argument("Z.hamdist: negative arguments");
-  }
-  return ml_z_popcount(BigInt(z1) ^ BigInt(z2));
+  return jsoo_z_hamdist(z1, z2);
 }
 
 //external size: t -> int
@@ -1077,18 +883,12 @@ function ml_z_congruent(a, b, c) {
 
 //external remove : t -> t -> t * int
 //Provides: ml_z_remove
-//Requires: ml_z_normalize, caml_raise_zero_divide
+//Requires: caml_raise_zero_divide, jsoo_z_remove
 function ml_z_remove(a, b) {
   if (b == 0) caml_raise_zero_divide();
   if (a == 0 || b == 1 || b == -1) return [0, a, 0];
-  let i = 0;
-  a = BigInt(a);
-  b = BigInt(b);
-  while ((a % b) === 0n) {
-    a /= b;
-    i++;
-  }
-  return [0, ml_z_normalize(a), i];
+  let res = jsoo_z_remove(a, b);
+  return [0, res[0], res[1]];
 }
 
 //external fac : int -> t
@@ -1155,36 +955,12 @@ function ml_z_lucnum(i) {
 }
 
 //Provides: ml_z_jacobi
-//Requires: caml_invalid_argument
+//Requires: caml_invalid_argument, jsoo_z_jacobi
 function ml_z_jacobi(n, k) {
-  let nn = BigInt(n);
   let kn = BigInt(k);
-  //assert(k > 0 and k % 2 == 1)
-  if (kn <= 0 || kn % 2n !== 1n)
+  if (kn <= 0n || kn % 2n !== 1n)
     caml_invalid_argument("Z.jacobi: second argument is negative or even");
-  nn = nn % kn;
-  if (nn < 0) nn += kn;
-  let t = 1;
-  while (nn !== 0n) {
-    while (nn % 2n === 0n) {
-      nn /= 2n;
-      let r = kn % 8n
-      if (r === 3n || r === 5n) {
-        t = -t
-      }
-    }
-    let n1 = nn, k1 = kn;
-    nn = k1;
-    kn = n1;
-    if (nn % 4n === 3n && kn % 4n === 3n) {
-      t = -t
-    }
-    nn = nn % kn
-  }
-  if (kn === 1n)
-    return t
-  else
-    return 0
+  return jsoo_z_jacobi(n, k);
 }
 
 //Provides: ml_z_legendre
@@ -1216,13 +992,424 @@ function ml_z_primorial(a) {
 }
 
 //Provides: ml_z_bin
-//Requires: ml_z_normalize, caml_invalid_argument
+//Requires: caml_invalid_argument, jsoo_z_bin
 function ml_z_bin(n, k) {
   if (k < 0) caml_invalid_argument("Z.bin: non-positive argument");
+  return jsoo_z_bin(n, k);
+}
+
+//Provides: jsoo_z_div const
+//Requires: ml_z_normalize
+function jsoo_z_div(z1, z2) {
+  return ml_z_normalize(BigInt(z1) / BigInt(z2))
+}
+
+//Provides: jsoo_z_rem const
+//Requires: ml_z_normalize
+function jsoo_z_rem(z1, z2) {
+  return ml_z_normalize(BigInt(z1) % BigInt(z2))
+}
+
+//Provides: jsoo_z_cdiv
+//Requires: jsoo_z_div, ml_z_add
+function jsoo_z_cdiv(z1, z2) {
+  if (z1 == 0) return 0;
+  if ((z1 > 0) == (z2 > 0)) /* Multiplication is like a signwise xor */ {
+    if (BigInt(z1) % BigInt(z2) != 0) {
+      return ml_z_add(jsoo_z_div(z1, z2), 1n);
+    }
+  }
+  return jsoo_z_div(z1, z2);
+}
+
+//Provides: jsoo_z_fdiv
+//Requires: jsoo_z_div, ml_z_sub
+function jsoo_z_fdiv(z1, z2) {
+  if (z1 == 0) return 0;
+  if ((z1 > 0) != (z2 > 0)) /* Multiplication is like a signwise xor */ {
+    if (BigInt(z1) % BigInt(z2) != 0) {
+      return ml_z_sub(jsoo_z_div(z1, z2), 1n);
+    }
+  }
+  return jsoo_z_div(z1, z2);
+}
+
+//Provides: jsoo_z_of_float const
+//Requires: ml_z_normalize
+function jsoo_z_of_float(f1) {
+  return ml_z_normalize(BigInt(f1 < 0 ? Math.ceil(f1) : Math.floor(f1)));
+}
+
+//If: wasm
+//Provides: wasm_z_of_int32 const
+function wasm_z_of_int32(z) {
+  // z does not fit in an integer
+  return BigInt(z);
+}
+
+//If: wasm
+//Provides: wasm_z_to_int32 const
+function wasm_z_to_int32(z) {
+  return Number(z)
+}
+
+//If: wasm
+//Provides: wasm_z_to_int64 const
+function wasm_z_to_int64(z) {
+  return z;
+}
+
+//If: wasm
+//Provides: wasm_z_fits_int32 const
+function wasm_z_fits_int32(z) {
+  return +(z == BigInt.asIntN(32, z));
+}
+
+//If: wasm
+//Provides: wasm_z_fits_int32_unsigned const
+function wasm_z_fits_int32_unsigned(z) {
+  return +(z == BigInt.asUintN(32, z));
+}
+
+//If: wasm
+//Provides: wasm_z_fits_int64 const
+function wasm_z_fits_int64(z) {
+  return +(z == BigInt.asIntN(64, z));
+}
+
+//If: wasm
+//Provides: wasm_z_fits_int64_unsigned const
+function wasm_z_fits_int64_unsigned(z) {
+  return +(z == BigInt.asUintN(64, z));
+}
+
+//Provides: jsoo_z_format
+function jsoo_z_format(fmt, z1) {
+  z1 = BigInt(z1);
+  var base = 10;
+  var cas = 0;
+  var width = 0;
+  var alt = 0;
+  var dir = 0;
+  var sign = '';
+  var pad = ' ';
+  var idx = 0;
+  var prefix = "";
+  while (fmt[idx] == '%') idx++;
+  for (; ; idx++) {
+    if (fmt[idx] == '#') alt = 1;
+    else if (fmt[idx] == '0') pad = '0';
+    else if (fmt[idx] == '-') dir = 1;
+    else if (fmt[idx] == ' ' || fmt[idx] == '+') sign = fmt[idx];
+    else break;
+  }
+  if (z1 < 0) { sign = '-'; z1 = -z1 };
+  for (; fmt[idx] >= '0' && fmt[idx] <= '9'; idx++)
+    width = 10 * width + (+fmt[idx]);
+  switch (fmt[idx]) {
+    case 'i': case 'd': case 'u': break;
+    case 'b': base = 2; if (alt) prefix = "0b"; break;
+    case 'o': base = 8; if (alt) prefix = "0o"; break;
+    case 'x': base = 16; if (alt) prefix = "0x"; break;
+    case 'X': base = 16; if (alt) prefix = "0X"; cas = 1; break;
+    default:
+      return -1;
+  }
+  if (dir) pad = ' ';
+  var res = z1.toString(base);
+  if (cas === 1) {
+    res = res.toUpperCase();
+  }
+  var size = res.length;
+  if (pad == ' ') {
+    if (dir) {
+      res = sign + prefix + res;
+      for (; res.length < width;) res = res + pad;
+    } else {
+      res = sign + prefix + res;
+      for (; res.length < width;) res = pad + res;
+    }
+  } else {
+    var pre = sign + prefix;
+    for (; res.length + pre.length < width;) res = pad + res;
+    res = pre + res;
+  }
+  return res;
+}
+
+//Provides: jsoo_z_of_js_string_base
+//Requires: ml_z_normalize
+function jsoo_z_of_js_string_base(base, s) {
+  if (base == 0) {
+    base = 10;
+    var p = 0;
+    var sign = 1;
+    if (s[p] == '-') { sign = -1; p++ }
+    else if (s[p] == '+') { p++ }
+    if (s[p] == '0') {
+      p++;
+      if (s.length == p) {
+        return 0;
+      } else {
+        var bc = s[p];
+        if (bc == 'o' || bc == 'O') {
+          base = 8;
+        } else if (bc == 'x' || bc == 'X') {
+          base = 16;
+        } else if (bc == 'b' || bc == 'B') {
+          base = 2;
+        }
+        if (base != 10) {
+          s = s.substring(p + 1);
+          if (sign == -1) s = "-" + s;
+        }
+      }
+    }
+  }
+  function digit(code) {
+    if (code >= 48 && code <= 57) return code - 48;
+    if (code >= 97 && code <= 102) return code - 97 + 10;
+    if (code >= 65 && code <= 70) return code - 65 + 10;
+    return 1000;
+  }
+  var negative = false;
+  var i = 0;
+  if (s[i] == '+') {
+    s = s.substring(1);
+  }
+  else if (s[i] == '-') {
+    negative = true;
+    i++;
+  }
+  if (s[i] == '_') return null;
+  s = s.replace(/_/g, '');
+  if (s == '-' || s == '') s = '0';
+  var res = 0n;
+  var base2 = BigInt(base);
+  for (; i < s.length; i++) {
+    var c = digit(s.charCodeAt(i));
+    if (c >= base) return null;
+    res = res * base2 + BigInt(c)
+  }
+  if (negative) res = -res;
+  return ml_z_normalize(res);
+}
+
+//If: wasm
+//Provides: wasm_z_hash const
+function wasm_z_hash(caml_hash_mix_int, z1) {
+  z1 = BigInt(z1);
+  var neg = z1 < 0;
+  if (neg) z1 = - z1;
+  var i = 0;
+  var acc = 0;
+  while (z1) {
+    i++;
+    acc = caml_hash_mix_int(acc, Number(BigInt.asIntN(32, z1)));
+    z1 >>= 32n;
+  };
+  if (i & 1) acc = caml_hash_mix_int(acc, 0);
+  if (neg) acc++;
+  return acc;
+}
+
+//Provides: jsoo_z_to_bits const
+function jsoo_z_to_bits(z1) {
+  z1 = BigInt(z1);
+  if (z1 < 0) z1 = -z1;
+  var res = "";
+  while (z1 != 0) {
+    res += String.fromCharCode(Number(z1 & 255n));
+    z1 >>= 8n;
+  }
+  while ((res.length & 3) != 0) {
+    res += String.fromCharCode(0);
+  }
+  return res;
+}
+
+//Provides: jsoo_z_of_bits const
+//Requires: ml_z_normalize
+function jsoo_z_of_bits(s) {
+  var r = 0n;
+  for (var i = s.length - 1; i >= 0; i--) {
+    var d = s.charCodeAt(i);
+    r = (r << 8n) + BigInt(d);
+  }
+  return ml_z_normalize(r);
+}
+
+//Provides: jsoo_z_gcdext_intern
+//Requires: ml_z_normalize
+function jsoo_z_gcdext_intern(z1, z2) {
+  z1 = BigInt(z1);
+  z2 = BigInt(z2);
+  var a = z1;
+  var b = z2;
+  var x = 0n;
+  var lastx = 1n;
+  var y = 1n;
+  var lasty = 1n;
+  var q, t, r;
+  while (b != 0n) {
+    q = a / b;
+    r = a - (q * b);
+    t = x;
+    x = lastx - (q * x);
+    lastx = t;
+    t = y;
+    y = lasty - (q * y);
+    lasty = t;
+    a = b;
+    b = r;
+  }
+  if (a < 0)
+    return [ml_z_normalize(-a), ml_z_normalize(-lastx)]
+  else
+    return [ml_z_normalize(a), ml_z_normalize(lastx)]
+}
+
+//Provides: jsoo_z_invert
+//Requires: jsoo_z_gcdext_intern, ml_z_normalize
+function jsoo_z_invert(a, n) {
+  a = BigInt(a);
+  n = BigInt(n);
+  var n_abs = (n < 0) ? (-n) : n;
+  var x = jsoo_z_gcdext_intern(a, n);
+  var r = BigInt(x[1]);
+  var tmp = (a * r) % n;
+  if (tmp < 0) tmp += n_abs;
+  if (r < 0) r += n_abs;
+  if (tmp == 1) {
+    return ml_z_normalize(r);
+  }
+  return null;
+}
+
+//Provides: jsoo_z_popcount
+function jsoo_z_popcount(z) {
+  if (z < 0) return -1;
+  for (var i = 0; z != 0n; i++) {
+    z = z & (z - 1n);
+  }
+  return i;
+}
+
+//Provides: jsoo_z_hamdist
+//Requires: jsoo_z_popcount
+function jsoo_z_hamdist(z1, z2) {
+  return jsoo_z_popcount(BigInt(z1) ^ BigInt(z2));
+}
+
+//Provides: jsoo_z_remove
+//Requires: ml_z_normalize
+function jsoo_z_remove(a, b) {
+  a = BigInt(a);
+  b = BigInt(b);
+  var i = 0;
+  while (a % b == 0) {
+    a = a / b;
+    i++;
+  }
+  return [ml_z_normalize(a), i];
+}
+
+//Provides: jsoo_z_powm
+//Requires: ml_z_normalize, ml_z_invert, jsoo_bigint_mod_pow
+function jsoo_z_powm(z1, z2, z3) {
+  let z3n = BigInt(z3);
+  if (z2 < 0) {
+    let inv = BigInt(ml_z_invert(z1, z3));
+    let r = jsoo_bigint_mod_pow(inv, BigInt(-z2), z3n);
+    if (r < 0) r = r + (z3n < 0 ? -z3n : z3n);
+    return ml_z_normalize(r);
+  } else {
+    let r = jsoo_bigint_mod_pow(BigInt(z1), BigInt(z2), z3n);
+    if (r < 0) r = r + (z3n < 0 ? -z3n : z3n);
+    return ml_z_normalize(r);
+  }
+}
+
+//Provides: jsoo_z_jacobi
+function jsoo_z_jacobi(n, k) {
   n = BigInt(n);
   k = BigInt(k);
-  let coeff = 1n;
-  for (let x = n - k + 1n; x <= n; x++) coeff *= x;
-  for (let x = 1n; x <= k; x++) coeff /= x;
+  n = n % k;
+  if (n < 0) n += k;
+  var t = 1;
+  while (n) {
+    while ((n & 1n) == 0) {
+      n >>= 1n;
+      var r = k & 7n;
+      if (r == 3 || r == 5) {
+        t = -t
+      }
+    }
+    var n1 = n, k1 = k;
+    n = k1;
+    k = n1;
+    if (((n & 3n) == 3) && ((k & 3n) == 3)) {
+      t = -t
+    }
+    n = n % k;
+  }
+  if (k == 1)
+    return t
+  else
+    return 0
+}
+
+//Provides: jsoo_z_bin
+//Requires: ml_z_normalize, ml_z_neg
+function jsoo_z_bin(n, k) {
+  var n = BigInt(n);
+  var k = BigInt(k);
+  var coeff;
+  if (n < 0) {
+    coeff = jsoo_z_bin(-n + k - 1n, k);
+    if (k & 1n) coeff = ml_z_neg(coeff);
+    return coeff;
+  }
+  if (k > n) return 0;
+  var k2 = n - k;
+  if (k2 < k) k = k2;
+  var coeff = 1n;
+  for (var i = 1n; i <= k; i++)
+    coeff = coeff * (n - i + 1n) / i;
   return ml_z_normalize(coeff);
+}
+
+//If: wasm
+//Provides: wasm_z_serialize
+function wasm_z_serialize(caml_serialize_int_1, s, z) {
+  if (z < 0) z = -z;
+  do {
+    var x = Number(BigInt.asIntN(32, z));
+    caml_serialize_int_1(s, x);
+    caml_serialize_int_1(s, x >>> 8);
+    caml_serialize_int_1(s, x >>> 16);
+    caml_serialize_int_1(s, x >>> 24);
+    z >>= 32n;
+  } while (z);
+}
+
+//If: wasm
+//Provides: wasm_z_deserialize
+function wasm_z_deserialize(caml_deserialize_uint_1, s, neg, count) {
+  var z = 0n;
+  for (var i = 0; i < count / 4; i++) {
+    var y = BigInt(caml_deserialize_uint_1(s));
+    y |= BigInt(caml_deserialize_uint_1(s)) << 8n;
+    y |= BigInt(caml_deserialize_uint_1(s)) << 16n;
+    y |= BigInt(caml_deserialize_uint_1(s)) << 24n;
+    z |= y << BigInt(32 * i);
+  };
+  if (neg) z = -z;
+  return z;
+}
+
+//If: wasm
+//Provides: wasm_z_positive const
+function wasm_z_positive(z) {
+  return z >= 0;
 }
