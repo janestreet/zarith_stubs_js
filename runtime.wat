@@ -1,61 +1,61 @@
 (module
    (import "bindings" "log" (func $log_js (param anyref)))
-   (import "js" "wasm_z_neg"
+   (import "js" "ml_z_neg"
       (func $neg (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_add"
+   (import "js" "ml_z_add"
       (func $add (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_sub"
+   (import "js" "ml_z_sub"
       (func $sub (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_mul"
+   (import "js" "ml_z_mul"
       (func $mul (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_div"
+   (import "js" "jsoo_z_div"
       (func $div (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_cdiv"
+   (import "js" "jsoo_z_cdiv"
       (func $cdiv (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_fdiv"
+   (import "js" "jsoo_z_fdiv"
       (func $fdiv (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_rem"
+   (import "js" "jsoo_z_rem"
       (func $rem (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_size"
+   (import "js" "ml_z_size"
       (func $size (param (ref any)) (result i32)))
-   (import "js" "wasm_z_numbits"
+   (import "js" "ml_z_numbits"
       (func $numbits (param (ref any)) (result i32)))
-   (import "js" "wasm_z_abs"
+   (import "js" "ml_z_abs"
       (func $abs (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_logand"
+   (import "js" "ml_z_logand"
       (func $logand (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_logor"
+   (import "js" "ml_z_logor"
       (func $logor (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_logxor"
+   (import "js" "ml_z_logxor"
       (func $logxor (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_lognot"
+   (import "js" "ml_z_lognot"
       (func $lognot (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_shift_left"
+   (import "js" "ml_z_shift_left"
       (func $shift_left (param (ref any)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_shift_right"
+   (import "js" "ml_z_shift_right"
       (func $shift_right (param (ref any)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_shift_right_trunc"
+   (import "js" "ml_z_shift_right_trunc"
       (func $shift_right_trunc
          (param (ref any)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_of_float"
+   (import "js" "jsoo_z_of_float"
       (func $of_float (param f64) (result (ref any))))
    (import "js" "wasm_z_of_int32"
       (func $of_int32 (param i32) (result (ref any))))
-   (import "js" "wasm_z_normalize"
+   (import "js" "ml_z_normalize"
       (func $of_int64 (param i64) (result (ref any))))
    (import "js" "wasm_z_to_int32"
       (func $to_int32 (param (ref any)) (result i32)))
    (import "js" "wasm_z_to_int64"
       (func $to_int64 (param (ref any)) (result i64)))
-   (import "js" "wasm_z_testbit"
+   (import "js" "ml_z_testbit"
       (func $testbit (param (ref any)) (param (ref eq)) (result i32)))
-   (import "js" "wasm_z_compare"
+   (import "js" "ml_z_compare"
       (func $compare (param (ref any)) (param (ref any)) (result i32)))
-   (import "js" "wasm_z_equal"
+   (import "js" "ml_z_equal"
       (func $equal (param (ref any)) (param (ref any)) (result i32)))
    (import "js" "wasm_z_positive"
       (func $positive (param (ref any)) (result i32)))
-   (import "js" "wasm_z_gcd"
+   (import "js" "ml_z_gcd"
       (func $gcd (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "wasm_z_fits_int32"
       (func $fits_int32 (param (ref any)) (result i32)))
@@ -65,64 +65,64 @@
       (func $fits_int64 (param (ref any)) (result i32)))
    (import "js" "wasm_z_fits_int64_unsigned"
       (func $fits_uint64 (param (ref any)) (result i32)))
-   (import "js" "wasm_z_powm"
+   (import "js" "jsoo_z_powm"
       (func $powm
          (param (ref any)) (param (ref any)) (param (ref any))
          (result (ref any))))
-   (import "js" "wasm_z_pow"
+   (import "js" "ml_z_pow"
       (func $pow (param (ref any)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_format"
+   (import "js" "jsoo_z_format"
       (func $format (param anyref) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_of_js_string_base"
+   (import "js" "jsoo_z_of_js_string_base"
       (func $of_js_string_base
          (param (ref eq)) (param anyref) (result anyref)))
    (import "js" "wasm_z_hash"
       (func $hash (param (ref func)) (param (ref any)) (result i32)))
-   (import "js" "wasm_z_to_bits"
+   (import "js" "jsoo_z_to_bits"
       (func $to_bits (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_of_bits"
+   (import "js" "jsoo_z_of_bits"
       (func $of_bits (param anyref) (result (ref any))))
-   (import "js" "wasm_z_root"
+   (import "js" "ml_z_root"
       (func $root (param (ref any)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_invert"
+   (import "js" "jsoo_z_invert"
       (func $invert (param (ref any)) (param (ref any)) (result anyref)))
-   (import "js" "wasm_z_perfect_power"
+   (import "js" "ml_z_perfect_power"
       (func $perfect_power (param (ref any)) (result i32)))
-   (import "js" "wasm_z_perfect_square"
+   (import "js" "ml_z_perfect_square"
       (func $perfect_square (param (ref any)) (result i32)))
-   (import "js" "wasm_z_probab_prime"
+   (import "js" "ml_z_probab_prime"
       (func $probab_prime (param (ref any)) (param (ref eq)) (result i32)))
-   (import "js" "wasm_z_nextprime"
+   (import "js" "ml_z_nextprime"
       (func $next_prime (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_extract"
+   (import "js" "ml_z_extract"
       (func $extract
          (param (ref any)) (param (ref eq)) (param (ref eq))
          (result (ref any))))
-   (import "js" "wasm_z_gcdext_intern"
+   (import "js" "jsoo_z_gcdext_intern"
       (func $gcdext_intern
          (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_trailing_zeros"
+   (import "js" "ml_z_trailing_zeros"
       (func $trailing_zeroes (param (ref any)) (result i32)))
-   (import "js" "wasm_z_popcount"
+   (import "js" "jsoo_z_popcount"
       (func $popcount (param (ref any)) (result i32)))
-   (import "js" "wasm_z_hamdist"
+   (import "js" "jsoo_z_hamdist"
       (func $hamdist (param (ref any)) (param (ref any)) (result i32)))
-   (import "js" "wasm_z_divisible"
+   (import "js" "ml_z_divisible"
       (func $divisible (param (ref any)) (param (ref any)) (result i32)))
-   (import "js" "wasm_z_remove"
+   (import "js" "jsoo_z_remove"
       (func $remove (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "wasm_z_fac" (func $fac (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_fac2" (func $fac2 (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_facM"
+   (import "js" "ml_z_fac" (func $fac (param (ref eq)) (result (ref any))))
+   (import "js" "ml_z_fac2" (func $fac2 (param (ref eq)) (result (ref any))))
+   (import "js" "ml_z_facM"
       (func $facM (param (ref eq)) (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_fib" (func $fib (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_lucnum"
+   (import "js" "ml_z_fib" (func $fib (param (ref eq)) (result (ref any))))
+   (import "js" "ml_z_lucnum"
       (func $lucnum (param (ref eq)) (result (ref any))))
-   (import "js" "wasm_z_jacobi"
+   (import "js" "jsoo_z_jacobi"
       (func $jacobi (param (ref any)) (param (ref any)) (result i32)))
-   (import "js" "wasm_z_primorial"
+   (import "js" "ml_z_primorial"
       (func $primorial (param i32) (result (ref any))))
-   (import "js" "wasm_z_bin"
+   (import "js" "jsoo_z_bin"
       (func $bin (param (ref any)) (param (ref eq)) (result (ref any))))
    (import "js" "wasm_z_serialize"
       (func $serialize (param (ref func)) (param (ref eq)) (param (ref any))))

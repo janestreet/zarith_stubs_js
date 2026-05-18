@@ -8,5 +8,5 @@
  (preprocess no_preprocessing)
  (wasm_of_ocaml
   (javascript_files ./runtime.js)
-  (wasm_files runtime_wasm.js runtime.wat)
+  (wasm_files runtime.js runtime.wat)
   (flags --no-sourcemap)))
