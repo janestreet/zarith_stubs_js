@@ -1,4 +1,5 @@
 (module
+    
    (import "bindings" "log" (func $log_js (param anyref)))
    (import "js" "ml_z_neg"
       (func $neg (param (ref any)) (result (ref any))))
@@ -31,12 +32,12 @@
    (import "js" "ml_z_lognot"
       (func $lognot (param (ref any)) (result (ref any))))
    (import "js" "ml_z_shift_left"
-      (func $shift_left (param (ref any)) (param (ref eq)) (result (ref any))))
+      (func $shift_left (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "ml_z_shift_right"
-      (func $shift_right (param (ref any)) (param (ref eq)) (result (ref any))))
+      (func $shift_right (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "ml_z_shift_right_trunc"
       (func $shift_right_trunc
-         (param (ref any)) (param (ref eq)) (result (ref any))))
+         (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "jsoo_z_of_float"
       (func $of_float (param f64) (result (ref any))))
    (import "js" "wasm_z_of_int32"
@@ -48,7 +49,7 @@
    (import "js" "wasm_z_to_int64"
       (func $to_int64 (param (ref any)) (result i64)))
    (import "js" "ml_z_testbit"
-      (func $testbit (param (ref any)) (param (ref eq)) (result i32)))
+      (func $testbit (param (ref any)) (param (ref any)) (result i32)))
    (import "js" "ml_z_compare"
       (func $compare (param (ref any)) (param (ref any)) (result i32)))
    (import "js" "ml_z_equal"
@@ -70,7 +71,7 @@
          (param (ref any)) (param (ref any)) (param (ref any))
          (result (ref any))))
    (import "js" "ml_z_pow"
-      (func $pow (param (ref any)) (param (ref eq)) (result (ref any))))
+      (func $pow (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "jsoo_z_format"
       (func $format (param anyref) (param (ref any)) (result (ref any))))
    (import "js" "jsoo_z_of_js_string_base"
@@ -79,11 +80,11 @@
    (import "js" "wasm_z_hash"
       (func $hash (param (ref func)) (param (ref any)) (result i32)))
    (import "js" "jsoo_z_to_bits"
-      (func $to_bits (param (ref any)) (result (ref any))))
+      (func $to_bits (param (ref any)) (param i32) (result (ref any))))
    (import "js" "jsoo_z_of_bits"
       (func $of_bits (param anyref) (result (ref any))))
    (import "js" "ml_z_root"
-      (func $root (param (ref any)) (param (ref eq)) (result (ref any))))
+      (func $root (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "jsoo_z_invert"
       (func $invert (param (ref any)) (param (ref any)) (result anyref)))
    (import "js" "ml_z_perfect_power"
@@ -91,12 +92,12 @@
    (import "js" "ml_z_perfect_square"
       (func $perfect_square (param (ref any)) (result i32)))
    (import "js" "ml_z_probab_prime"
-      (func $probab_prime (param (ref any)) (param (ref eq)) (result i32)))
+      (func $probab_prime (param (ref any)) (param (ref any)) (result i32)))
    (import "js" "ml_z_nextprime"
       (func $next_prime (param (ref any)) (result (ref any))))
    (import "js" "ml_z_extract"
       (func $extract
-         (param (ref any)) (param (ref eq)) (param (ref eq))
+         (param (ref any)) (param (ref any)) (param (ref any))
          (result (ref any))))
    (import "js" "jsoo_z_gcdext_intern"
       (func $gcdext_intern
@@ -111,21 +112,26 @@
       (func $divisible (param (ref any)) (param (ref any)) (result i32)))
    (import "js" "jsoo_z_remove"
       (func $remove (param (ref any)) (param (ref any)) (result (ref any))))
-   (import "js" "ml_z_fac" (func $fac (param (ref eq)) (result (ref any))))
-   (import "js" "ml_z_fac2" (func $fac2 (param (ref eq)) (result (ref any))))
+   (import "js" "ml_z_fac" (func $fac (param (ref any)) (result (ref any))))
+   (import "js" "ml_z_fac2"
+      (func $fac2 (param (ref any)) (result (ref any))))
    (import "js" "ml_z_facM"
-      (func $facM (param (ref eq)) (param (ref eq)) (result (ref any))))
-   (import "js" "ml_z_fib" (func $fib (param (ref eq)) (result (ref any))))
+      (func $facM (param (ref any)) (param (ref any)) (result (ref any))))
+   (import "js" "ml_z_fib" (func $fib (param (ref any)) (result (ref any))))
    (import "js" "ml_z_lucnum"
-      (func $lucnum (param (ref eq)) (result (ref any))))
+      (func $lucnum (param (ref any)) (result (ref any))))
    (import "js" "jsoo_z_jacobi"
       (func $jacobi (param (ref any)) (param (ref any)) (result i32)))
-   (import "js" "ml_z_primorial"
-      (func $primorial (param i32) (result (ref any))))
+   (import "js" "jsoo_z_kronecker"
+      (func $kronecker (param (ref any)) (param (ref any)) (result i32)))
+    
+      (import "js" "ml_z_primorial"
+         (func $primorial (param i32) (result (ref any)))) 
    (import "js" "jsoo_z_bin"
-      (func $bin (param (ref any)) (param (ref eq)) (result (ref any))))
+      (func $bin (param (ref any)) (param (ref any)) (result (ref any))))
    (import "js" "wasm_z_serialize"
-      (func $serialize (param (ref func)) (param (ref eq)) (param (ref any))))
+      (func $serialize
+         (param (ref func)) (param (ref eq)) (param (ref any)) (param i32)))
    (import "js" "wasm_z_deserialize"
       (func $deserialize
          (param (ref func)) (param (ref eq)) (param i32) (param i32)
@@ -155,14 +161,18 @@
       (func $caml_named_value (param (ref eq)) (result (ref null eq))))
    (import "env" "caml_copy_int32"
       (func $caml_copy_int32 (param i32) (result (ref eq))))
-   (import "env" "caml_copy_nativeint"
-      (func $caml_copy_nativeint (param i32) (result (ref eq))))
+    
+      (import "env" "caml_copy_nativeint"
+         (func $caml_copy_nativeint (param i32) (result (ref eq))))
+    
    (import "env" "caml_copy_int64"
       (func $caml_copy_int64 (param i64) (result (ref eq))))
    (import "env" "Double_val" (func $Double_val (param (ref eq)) (result f64)))
    (import "env" "Int32_val" (func $Int32_val (param (ref eq)) (result i32)))
-   (import "env" "Nativeint_val"
-      (func $Nativeint_val (param (ref eq)) (result i32)))
+    
+      (import "env" "Nativeint_val"
+         (func $Nativeint_val (param (ref eq)) (result i32)))
+    
    (import "env" "Int64_val" (func $Int64_val (param (ref eq)) (result i64)))
    (import "env" "caml_hash_mix_int"
       (func $caml_hash_mix_int (param i32) (param i32) (result i32)))
@@ -178,9 +188,13 @@
       (func $caml_deserialize_uint_1 (param (ref eq)) (result i32)))
    (import "env" "caml_deserialize_int_4"
       (func $caml_deserialize_int_4 (param (ref eq)) (result i32)))
+    
+
+   (@string $ml_z_of_substring_base "Z.of_substring_base")
 
    (type $block (array (mut (ref eq))))
    (type $string (array (mut i8)))
+   (type $bytes (array (mut i8)))
 
    (type $compare
       (func (param (ref eq)) (param (ref eq)) (param i32) (result i32)))
@@ -221,19 +235,23 @@
             (field (ref $custom_operations))
             (field $v (ref any)))))
 
-   (func $unwrap_bigint (param (ref eq)) (result (ref any))
-      (block $not_bigint (result (ref any))
-         (return
-            (struct.get $bigint $v
-               (br_on_cast_fail
-                  $not_bigint (ref eq) (ref $bigint) (local.get 0))))))
+    
+      (func $unwrap_bigint (param (ref eq)) (result (ref any))
+         (block $not_bigint (result (ref any))
+            (return
+               (struct.get $bigint $v
+                  (br_on_cast_fail
+                     $not_bigint (ref eq) (ref $bigint) (local.get 0))))))
+    
 
-   (func $wrap_bigint (param (ref any)) (result (ref eq))
-      (block $is_eq (result (ref eq))
-         (return
-            (struct.new $bigint
-               (global.get $ml_z_custom_ops)
-               (br_on_cast $is_eq (ref any) (ref eq) (local.get 0))))))
+    
+      (func $wrap_bigint (param (ref any)) (result (ref eq))
+         (block $is_eq (result (ref eq))
+            (return
+               (struct.new $bigint
+                  (global.get $ml_z_custom_ops)
+                  (br_on_cast $is_eq (ref any) (ref eq) (local.get 0))))))
+    
 
    (data $ml_z_overflow "ml_z_overflow")
 
@@ -244,18 +262,20 @@
                (array.new_data $string $ml_z_overflow
                   (i32.const 0) (i32.const 13))))))
 
-   (func (export "ml_z_mul_overflows")
-      (param $vx (ref eq)) (param $vy (ref eq)) (result (ref eq))
-      (local $x i64) (local $y i64) (local $z i64)
-      (local.set $x
-         (i64.extend_i32_s (i31.get_u (ref.cast (ref i31) (local.get $vx)))))
-      (local.set $y
-         (i64.extend_i32_s (i31.get_u (ref.cast (ref i31) (local.get $vy)))))
-      (local.set $z (i64.mul (local.get $x) (local.get $y)))
-      (ref.i31
-         (i64.ne (local.get $z)
-            (i64.shr_s
-               (i64.shl (local.get $z) (i64.const 33)) (i64.const 33)))))
+    
+      (func (export "ml_z_mul_overflows")
+         (param $vx (ref eq)) (param $vy (ref eq)) (result (ref eq))
+         (local $x i64) (local $y i64) (local $z i64)
+         (local.set $x
+            (i64.extend_i32_s (i31.get_u (ref.cast (ref i31) (local.get $vx)))))
+         (local.set $y
+            (i64.extend_i32_s (i31.get_u (ref.cast (ref i31) (local.get $vy)))))
+         (local.set $z (i64.mul (local.get $x) (local.get $y)))
+         (ref.i31
+            (i64.ne (local.get $z)
+               (i64.shr_s
+                  (i64.shl (local.get $z) (i64.const 33)) (i64.const 33)))))
+    
 
    (func (export "ml_z_init") (param (ref eq)) (result (ref eq))
       (call $caml_register_custom_operations (global.get $ml_z_custom_ops))
@@ -302,24 +322,24 @@
       (local.set $z (call $unwrap_bigint (local.get $v)))
       (call $caml_serialize_int_1 (local.get $s)
          (select (i32.const 0) (i32.const 1) (call $positive (local.get $z))))
-      (local.set $nb (i32.mul (call $size (local.get $z)) (i32.const 4)))
+      (local.set $nb
+          
+            (i32.mul (call $size (local.get $z)) (i32.const 4)) )
       (call $caml_serialize_int_4 (local.get $s) (local.get $nb))
       (call $serialize (ref.func $caml_serialize_int_1) (local.get $s)
-         (local.get $z))
-      (tuple.make 2
-          (i32.add (i32.const 4) (local.get $nb))
-          (i32.and (i32.const -8) (i32.add (i32.const 15) (local.get $nb)))))
+         (local.get $z) (local.get $nb))
+      (i32.add (i32.const 4) (local.get $nb))
+      (i32.and (i32.const -8) (i32.add (i32.const 15) (local.get $nb))))
 
    (func $ml_z_custom_deserialize
       (param $s (ref eq)) (result (ref eq)) (result i32)
       (local $neg i32) (local $nb i32)
       (local.set $neg (call $caml_deserialize_uint_1 (local.get $s)))
       (local.set $nb (call $caml_deserialize_int_4 (local.get $s)))
-      (tuple.make 2
-         (call $wrap_bigint
-            (call $deserialize (ref.func $caml_deserialize_uint_1) (local.get $s)
-               (local.get $neg) (local.get $nb)))
-         (i32.add (i32.const 4) (local.get $nb))))
+      (call $wrap_bigint
+         (call $deserialize (ref.func $caml_deserialize_uint_1) (local.get $s)
+            (local.get $neg) (local.get $nb)))
+      (i32.add (i32.const 4) (local.get $nb)))
 
    (func (export "ml_z_cdiv")
       (param $z1 (ref eq)) (param $z2 (ref eq)) (result (ref eq))
@@ -402,47 +422,53 @@
 
    (func (export "ml_z_shift_left")
       (param $z (ref eq)) (param $amt (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $amt)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $amt)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $shift_left_error
                   (i32.const 0) (i32.const 45)))))
-      (return_call $wrap_bigint
-         (call $shift_left
-            (call $unwrap_bigint (local.get $z)) (local.get $amt))))
+       
+         (return_call $wrap_bigint
+            (call $shift_left
+               (call $unwrap_bigint (local.get $z)) (local.get $amt))) )
 
    (data $shift_right_error "Z.shift_right: count argument must be positive")
 
    (func (export "ml_z_shift_right")
       (param $z (ref eq)) (param $amt (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $amt)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $amt)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $shift_right_error
                   (i32.const 0) (i32.const 46)))))
-      (return_call $wrap_bigint
-         (call $shift_right
-            (call $unwrap_bigint (local.get $z)) (local.get $amt))))
+       
+         (return_call $wrap_bigint
+            (call $shift_right
+               (call $unwrap_bigint (local.get $z)) (local.get $amt))) )
 
    (data $shift_right_trunc_error
       "Z.shift_right_trunc: count argument must be positive")
 
    (func (export "ml_z_shift_right_trunc")
       (param $z (ref eq)) (param $amt (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $amt)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $amt)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $shift_right_trunc_error
                   (i32.const 0) (i32.const 52)))))
-      (return_call $wrap_bigint
-         (call $shift_right_trunc
-            (call $unwrap_bigint (local.get $z)) (local.get $amt))))
+       
+         (return_call $wrap_bigint
+            (call $shift_right_trunc
+               (call $unwrap_bigint (local.get $z)) (local.get $amt))) )
 
    (func (export "ml_z_of_int32")
       (param $d (ref eq)) (result (ref eq))
@@ -453,14 +479,16 @@
          (then (return (local.get $res)))
          (else (return_call $wrap_bigint (call $of_int32 (local.get $x))))))
 
-   (func (export "ml_z_of_nativeint")
-      (param $d (ref eq)) (result (ref eq))
-      (local $x i32) (local $res (ref i31))
-      (local.set $x (call $Nativeint_val (local.get $d)))
-      (local.set $res (ref.i31 (local.get $x)))
-      (if (i32.eq (local.get $x) (i31.get_s (local.get $res)))
-         (then (return (local.get $res)))
-         (else (return_call $wrap_bigint (call $of_int32 (local.get $x))))))
+    
+      (func (export "ml_z_of_nativeint")
+         (param $d (ref eq)) (result (ref eq))
+         (local $x i32) (local $res (ref i31))
+         (local.set $x (call $Nativeint_val (local.get $d)))
+         (local.set $res (ref.i31 (local.get $x)))
+         (if (i32.eq (local.get $x) (i31.get_s (local.get $res)))
+            (then (return (local.get $res)))
+            (else (return_call $wrap_bigint (call $of_int32 (local.get $x))))))
+    
 
    (func (export "ml_z_of_int64")
       (param $z (ref eq)) (result (ref eq))
@@ -477,11 +505,13 @@
          (then (call $ml_z_raise_overflow)))
       (call $wrap_bigint (call $of_float (local.get $f))))
 
-   (func (export "ml_z_to_int")
-      (param $z (ref eq)) (result (ref eq))
-      (if (i32.eqz (ref.test (ref i31) (local.get $z)))
-         (then (call $ml_z_raise_overflow)))
-      (local.get $z))
+    
+      (func (export "ml_z_to_int")
+         (param $z (ref eq)) (result (ref eq))
+         (if (i32.eqz (ref.test (ref i31) (local.get $z)))
+            (then (call $ml_z_raise_overflow)))
+         (local.get $z))
+    
 
    (func (export "ml_z_to_int32")
       (param $z (ref eq)) (result (ref eq))
@@ -498,38 +528,48 @@
    (func (export "ml_z_to_int32_unsigned")
       (param $z (ref eq)) (result (ref eq))
       (local $z' (ref any))
+      (local $x i32)
       (drop (block $large (result (ref eq))
-         (return_call $caml_copy_int32
+         (local.set $x
             (i31.get_s
-               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
+               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))
+         (if (i32.lt_s (local.get $x) (i32.const 0))
+            (then (call $ml_z_raise_overflow)))
+         (return_call $caml_copy_int32 (local.get $x))))
       (local.set $z' (call $unwrap_bigint (local.get $z)))
       (if (i32.eqz (call $fits_uint32 (local.get $z')))
          (then (call $ml_z_raise_overflow)))
       (return_call $caml_copy_int32 (call $to_int32 (local.get $z'))))
 
-   (func (export "ml_z_to_nativeint")
-      (param $z (ref eq)) (result (ref eq))
-      (local $z' (ref any))
-      (drop (block $large (result (ref eq))
-         (return_call $caml_copy_nativeint
-            (i31.get_s
-               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
-      (local.set $z' (call $unwrap_bigint (local.get $z)))
-      (if (i32.eqz (call $fits_int32 (local.get $z')))
-         (then (call $ml_z_raise_overflow)))
-      (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
+    
+      (func (export "ml_z_to_nativeint")
+         (param $z (ref eq)) (result (ref eq))
+         (local $z' (ref any))
+         (drop (block $large (result (ref eq))
+            (return_call $caml_copy_nativeint
+               (i31.get_s
+                  (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
+         (local.set $z' (call $unwrap_bigint (local.get $z)))
+         (if (i32.eqz (call $fits_int32 (local.get $z')))
+            (then (call $ml_z_raise_overflow)))
+         (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
 
-   (func (export "ml_z_to_nativeint_unsigned")
-      (param $z (ref eq)) (result (ref eq))
-      (local $z' (ref any))
-      (drop (block $large (result (ref eq))
-         (return_call $caml_copy_nativeint
-            (i31.get_s
-               (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))))
-      (local.set $z' (call $unwrap_bigint (local.get $z)))
-      (if (i32.eqz (call $fits_uint32 (local.get $z')))
-         (then (call $ml_z_raise_overflow)))
-      (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
+      (func (export "ml_z_to_nativeint_unsigned")
+         (param $z (ref eq)) (result (ref eq))
+         (local $z' (ref any))
+         (local $x i32)
+         (drop (block $large (result (ref eq))
+            (local.set $x
+               (i31.get_s
+                  (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))
+            (if (i32.lt_s (local.get $x) (i32.const 0))
+               (then (call $ml_z_raise_overflow)))
+            (return_call $caml_copy_nativeint (local.get $x))))
+         (local.set $z' (call $unwrap_bigint (local.get $z)))
+         (if (i32.eqz (call $fits_uint32 (local.get $z')))
+            (then (call $ml_z_raise_overflow)))
+         (return_call $caml_copy_nativeint (call $to_int32 (local.get $z'))))
+    
 
    (func (export "ml_z_to_int64")
       (param $z (ref eq)) (result (ref eq))
@@ -548,12 +588,15 @@
    (func (export "ml_z_to_int64_unsigned")
       (param $z (ref eq)) (result (ref eq))
       (local $z' (ref any))
+      (local $x i32)
       (drop (block $large (result (ref eq))
-         (return_call $caml_copy_int64
-            (i64.extend_i32_s
-               (i31.get_s
-                  (br_on_cast_fail $large (ref eq) (ref i31)
-                     (local.get $z)))))))
+         (local.set $x
+            (i31.get_s
+               (br_on_cast_fail $large (ref eq) (ref i31)
+                  (local.get $z))))
+         (if (i32.lt_s (local.get $x) (i32.const 0))
+            (then (call $ml_z_raise_overflow)))
+         (return_call $caml_copy_int64 (i64.extend_i32_s (local.get $x)))))
       (local.set $z' (call $unwrap_bigint (local.get $z)))
       (if (i32.eqz (call $fits_uint64 (local.get $z')))
          (then (call $ml_z_raise_overflow)))
@@ -563,7 +606,8 @@
       (param $z (ref eq)) (param $vpos (ref eq)) (result (ref eq))
       (local $pos i32)
       (drop (block $large (result (ref eq))
-         (local.set $pos (i31.get_s (ref.cast (ref i31) (local.get $vpos))))
+         (local.set $pos  
+                            (i31.get_s (ref.cast (ref i31) (local.get $vpos))) )
          (if (i32.gt_s (local.get $pos) (i32.const 31))
             (then (local.set $pos (i32.const 31))))
          (return
@@ -574,9 +618,10 @@
                         (br_on_cast_fail $large (ref eq) (ref i31)
                            (local.get $z)))
                      (local.get $pos)))))))
-      (ref.i31
-         (call $testbit
-            (call $unwrap_bigint (local.get $z)) (local.get $vpos))))
+       
+         (ref.i31
+            (call $testbit
+               (call $unwrap_bigint (local.get $z)) (local.get $vpos))) )
 
    (data $format_error "Unsupported format '")
 
@@ -622,9 +667,15 @@
       (local $base i32) (local $pos i32) (local $len i32)
       (local $res anyref)
       (local.set $s (ref.cast (ref $string) (local.get $vs)))
-      (local.set $pos (i31.get_s (ref.cast (ref i31) (local.get $vpos))))
-      (local.set $len (i31.get_s (ref.cast (ref i31) (local.get $vlen))))
-      (local.set $base (i31.get_s (ref.cast (ref i31) (local.get $vbase))))
+      (local.set $pos
+          
+            (i31.get_s (ref.cast (ref i31) (local.get $vpos))) )
+      (local.set $len
+          
+            (i31.get_s (ref.cast (ref i31) (local.get $vlen))) )
+      (local.set $base
+          
+            (i31.get_s (ref.cast (ref i31) (local.get $vbase))) )
       (if (i32.or (i32.lt_s (local.get $pos) (i32.const 0))
              (i32.or (i32.lt_s (local.get $len) (i32.const 0))
                 (i32.lt_s (array.len (local.get $s))
@@ -685,9 +736,12 @@
       (if (ref.eq (local.get $z1) (local.get $z2))
          (then (return (ref.i31 (i32.const 1)))))
       ;; If one of them is a small integer, equality implies physical equality
+      ;; Neither [ref.test] guards a cast, and both operands are pure.
+      ;; lint-ignore-start manual-portability-handling-unsafe
       (if (i32.or (ref.test (ref i31) (local.get $z1))
              (ref.test (ref i31) (local.get $z2)))
          (then (return (ref.i31 (i32.const 0)))))
+      ;; lint-ignore-end manual-portability-handling-unsafe
       (ref.i31
          (call $equal
             (call $unwrap_bigint (local.get $z1))
@@ -717,9 +771,11 @@
    (func (export "ml_z_numbits") (param $z (ref eq)) (result (ref eq))
       (ref.i31 (call $numbits (call $unwrap_bigint (local.get $z)))))
 
-   (func (export "ml_z_fits_int")
-      (param $z (ref eq)) (result (ref eq))
-      (ref.i31 (ref.test (ref i31) (local.get $z))))
+    
+      (func (export "ml_z_fits_int")
+         (param $z (ref eq)) (result (ref eq))
+         (ref.i31 (ref.test (ref i31) (local.get $z))))
+    
 
    (func (export "ml_z_fits_int32")
       (param $z (ref eq)) (result (ref eq))
@@ -730,20 +786,26 @@
    (func (export "ml_z_fits_int32_unsigned")
       (param $z (ref eq)) (result (ref eq))
       (if (ref.test (ref i31) (local.get $z))
-         (then (return (ref.i31 (i32.const 1)))))
+         (then (return (ref.i31
+            (i32.ge_s (i31.get_s (ref.cast (ref i31) (local.get $z)))
+               (i32.const 0))))))
       (ref.i31 (call $fits_uint32 (call $unwrap_bigint (local.get $z)))))
 
-   (func (export "ml_z_fits_nativeint")
-      (param $z (ref eq)) (result (ref eq))
-      (if (ref.test (ref i31) (local.get $z))
-         (then (return (ref.i31 (i32.const 1)))))
-      (ref.i31 (call $fits_int32 (call $unwrap_bigint (local.get $z)))))
+    
+      (func (export "ml_z_fits_nativeint")
+         (param $z (ref eq)) (result (ref eq))
+         (if (ref.test (ref i31) (local.get $z))
+            (then (return (ref.i31 (i32.const 1)))))
+         (ref.i31 (call $fits_int32 (call $unwrap_bigint (local.get $z)))))
 
-   (func (export "ml_z_fits_nativeint_unsigned")
-      (param $z (ref eq)) (result (ref eq))
-      (if (ref.test (ref i31) (local.get $z))
-         (then (return (ref.i31 (i32.const 1)))))
-      (ref.i31 (call $fits_uint32 (call $unwrap_bigint (local.get $z)))))
+      (func (export "ml_z_fits_nativeint_unsigned")
+         (param $z (ref eq)) (result (ref eq))
+         (if (ref.test (ref i31) (local.get $z))
+            (then (return (ref.i31
+               (i32.ge_s (i31.get_s (ref.cast (ref i31) (local.get $z)))
+                  (i32.const 0))))))
+         (ref.i31 (call $fits_uint32 (call $unwrap_bigint (local.get $z)))))
+    
 
    (func (export "ml_z_fits_int64")
       (param $z (ref eq)) (result (ref eq))
@@ -754,7 +816,9 @@
    (func (export "ml_z_fits_int64_unsigned")
       (param $z (ref eq)) (result (ref eq))
       (if (ref.test (ref i31) (local.get $z))
-         (then (return (ref.i31 (i32.const 1)))))
+         (then (return (ref.i31
+            (i32.ge_s (i31.get_s (ref.cast (ref i31) (local.get $z)))
+               (i32.const 0))))))
       (ref.i31 (call $fits_uint64 (call $unwrap_bigint (local.get $z)))))
 
    (func (export "ml_z_powm")
@@ -785,15 +849,18 @@
    (func (export "ml_z_pow")
       (param $z (ref eq)) (param $i (ref eq))
       (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $i)))
-             (i32.const 0))
+      (if
+           
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $i)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $pow_negative_exp
                   (i32.const 0) (i32.const 35)))))
-      (call $wrap_bigint
-         (call $pow (call $unwrap_bigint (local.get $z)) (local.get $i))))
+       
+         (call $wrap_bigint
+            (call $pow (call $unwrap_bigint (local.get $z)) (local.get $i))) )
 
    (func $ml_z_custom_hash (param $z (ref eq)) (result i32)
       (return_call $hash (ref.func $caml_hash_mix_int)
@@ -801,18 +868,21 @@
 
    (func (export "ml_z_hash")
       (param $z (ref eq)) (result (ref eq))
-      (ref.i31
-         (i32.and (i32.const 0x3FFFFFFF)
-            (call $caml_hash_mix_final
-               (call $caml_hash_mix_int (i32.const 0)
-                  (call $hash
-                     (ref.func $caml_hash_mix_int)
-                     (call $unwrap_bigint (local.get $z))))))))
+       
+         ;; A 31-bit OCaml int cannot hold the accumulator, so mix it down
+         ;; rather than truncating it.
+         (ref.i31
+            (i32.and (i32.const 0x3FFFFFFF)
+               (call $caml_hash_mix_final
+                  (call $caml_hash_mix_int (i32.const 0)
+                     (call $ml_z_custom_hash (local.get $z)))))) )
 
    (func (export "ml_z_to_bits")
       (param $z (ref eq)) (result (ref eq))
       (return_call $caml_string_of_jsbytes
-         (call $wrap (call $to_bits (call $unwrap_bigint (local.get $z))))))
+         (call $wrap
+            (call $to_bits (call $unwrap_bigint (local.get $z))
+                 (i32.const 4) ))))
 
    (func (export "ml_z_of_bits")
       (param $s (ref eq)) (result (ref eq))
@@ -833,6 +903,9 @@
             (call $caml_invalid_argument
                (array.new_data $string $powm_positive_exp
                   (i32.const 0) (i32.const 37)))))
+      ;; [logand] with 1 returns 0 or 1, which the zarith JS runtime hands back
+      ;; as a small integer, i.e. an [i31] whatever the width of an OCaml int.
+      ;; lint-ignore-start manual-portability-handling-unsafe
       (if (i32.eqz
              (i31.get_s
                 (ref.cast (ref i31)
@@ -843,6 +916,7 @@
             (call $caml_invalid_argument
                (array.new_data $string $powm_odd_modulus
                   (i32.const 0) (i32.const 31)))))
+      ;; lint-ignore-end manual-portability-handling-unsafe
       (if (i32.or (ref.eq (local.get $mod) (ref.i31 (i32.const 1)))
               (ref.eq (local.get $mod) (ref.i31 (i32.const -1))))
          (then (return (ref.i31 (i32.const 0)))))
@@ -859,28 +933,30 @@
    (func (export "ml_z_root")
       (param $z (ref eq)) (param $vi (ref eq)) (result (ref eq))
       (local $i i32) (local $z' (ref any))
-      (local.set $i (i31.get_s (ref.cast (ref i31) (local.get $vi))))
-      (local.set $z' (call $unwrap_bigint (local.get $z)))
-      (if (i32.le_s (local.get $i) (i32.const 0))
-         (then
-            (call $caml_invalid_argument
-               (array.new_data $string $root_negative_exponent
-                  (i32.const 0) (i32.const 33)))))
-      (if (i32.eqz (i32.and (local.get $i) (i32.const 1)))
-         (then
-            (if (i32.eqz (call $positive (local.get $z')))
-               (then
-                  (call $caml_invalid_argument
-                     (array.new_data $string $root_even_neg
-                        (i32.const 0) (i32.const 38)))))))
+       
+         (local.set $i (i31.get_s (ref.cast (ref i31) (local.get $vi))))
+         (local.set $z' (call $unwrap_bigint (local.get $z)))
+         (if (i32.le_s (local.get $i) (i32.const 0))
+            (then
+               (call $caml_invalid_argument
+                  (array.new_data $string $root_negative_exponent
+                     (i32.const 0) (i32.const 33)))))
+         (if (i32.eqz (i32.and (local.get $i) (i32.const 1)))
+            (then
+               (if (i32.eqz (call $positive (local.get $z')))
+                  (then
+                     (call $caml_invalid_argument
+                        (array.new_data $string $root_even_neg
+                           (i32.const 0) (i32.const 38))))))) 
       (if (i32.or (ref.eq (local.get $z) (ref.i31 (i32.const 0)))
              (ref.eq (local.get $z) (ref.i31 (i32.const 1))))
          (then
             (return (local.get $z))))
-      (return_call $wrap_bigint
-         (call $root
-            (call $unwrap_bigint (local.get $z))
-            (local.get $vi))))
+       
+         (return_call $wrap_bigint
+            (call $root
+               (call $unwrap_bigint (local.get $z))
+               (local.get $vi))) )
 
    (data $rootrem_negative_exponent "Z.rootrem: exponent must be positive")
 
@@ -889,20 +965,21 @@
    (func (export "ml_z_rootrem")
       (param $z (ref eq)) (param $vi (ref eq)) (result (ref eq))
       (local $i i32) (local $z' (ref any)) (local $r (ref any))
-      (local.set $i (i31.get_s (ref.cast (ref i31) (local.get $vi))))
-      (local.set $z' (call $unwrap_bigint (local.get $z)))
-      (if (i32.le_s (local.get $i) (i32.const 0))
-         (then
-            (call $caml_invalid_argument
-               (array.new_data $string $rootrem_negative_exponent
-                  (i32.const 0) (i32.const 36)))))
-      (if (i32.eqz (i32.and (local.get $i) (i32.const 1)))
-         (then
-            (if (i32.eqz (call $positive (local.get $z')))
-               (then
-                  (call $caml_invalid_argument
-                     (array.new_data $string $rootrem_even_neg
-                        (i32.const 0) (i32.const 41)))))))
+       
+         (local.set $i (i31.get_s (ref.cast (ref i31) (local.get $vi))))
+         (local.set $z' (call $unwrap_bigint (local.get $z)))
+         (if (i32.le_s (local.get $i) (i32.const 0))
+            (then
+               (call $caml_invalid_argument
+                  (array.new_data $string $rootrem_negative_exponent
+                     (i32.const 0) (i32.const 36)))))
+         (if (i32.eqz (i32.and (local.get $i) (i32.const 1)))
+            (then
+               (if (i32.eqz (call $positive (local.get $z')))
+                  (then
+                     (call $caml_invalid_argument
+                        (array.new_data $string $rootrem_even_neg
+                           (i32.const 0) (i32.const 41))))))) 
       (if (i32.or (ref.eq (local.get $z) (ref.i31 (i32.const 0)))
              (ref.eq (local.get $z) (ref.i31 (i32.const 1))))
          (then
@@ -911,15 +988,17 @@
                   (local.get $z)
                   (ref.i31 (i32.const 0))))))
       (local.set $r
-         (call $root
-            (call $unwrap_bigint (local.get $z))
-            (local.get $vi)))
-      (array.new_fixed $block 3 (ref.i31 (i32.const 0))
-         (call $wrap_bigint (local.get $r))
-         (call $wrap_bigint
-            (call $sub
-               (local.get $z')
-               (call $pow (local.get $r) (local.get $vi))))))
+          
+            (call $root
+               (call $unwrap_bigint (local.get $z))
+               (local.get $vi)) )
+       
+         (array.new_fixed $block 3 (ref.i31 (i32.const 0))
+            (call $wrap_bigint (local.get $r))
+            (call $wrap_bigint
+               (call $sub
+                  (local.get $z')
+                  (call $pow (local.get $r) (local.get $vi))))) )
 
    (func $ml_z_invert (export "ml_z_invert")
       (param $a (ref eq)) (param $n (ref eq)) (result (ref eq))
@@ -953,23 +1032,26 @@
 
    (func (export "ml_z_probab_prime")
       (param $z (ref eq)) (param $i (ref eq)) (result (ref eq))
-      (ref.i31
-         (call $probab_prime
-            (call $unwrap_bigint (local.get $z)) (local.get $i))))
+       
+         (ref.i31
+            (call $probab_prime
+               (call $unwrap_bigint (local.get $z)) (local.get $i))) )
 
    (func (export "ml_z_nextprime") (param $z (ref eq)) (result (ref eq))
       (call $wrap_bigint
          (call $next_prime (call $unwrap_bigint (local.get $z)))))
 
    (export "ml_z_extract_small" (func $ml_z_extract))
+
    (func $ml_z_extract (export "ml_z_extract")
       (param $z (ref eq)) (param $pos (ref eq)) (param $len (ref eq))
       (result (ref eq))
-      (return_call $wrap_bigint
-         (call $extract
-            (call $unwrap_bigint (local.get $z))
-            (local.get $pos)
-            (local.get $len))))
+       
+         (return_call $wrap_bigint
+            (call $extract
+               (call $unwrap_bigint (local.get $z))
+               (local.get $pos)
+               (local.get $len))) )
 
    (func (export "ml_z_gcdext_intern")
       (param $z1 (ref eq)) (param $z2 (ref eq)) (result (ref eq))
@@ -1037,7 +1119,11 @@
             (i31.get_s
                (br_on_cast_fail $large (ref eq) (ref i31) (local.get $z))))
          (if (i32.eq (local.get $x) (i32.const 0))
-            (then (return (ref.i31 (i32.const 1073741823)))))
+            (then
+               ;; [trailing_zeros zero] is [max_int]
+                
+                  (return (ref.i31 (i32.const 1073741823))) 
+               ))
          (return
             (ref.i31 (i32.ctz (local.get $x))))))
       (ref.i31 (call $trailing_zeroes (call $unwrap_bigint (local.get $z)))))
@@ -1080,7 +1166,8 @@
    (func (export "ml_z_size") (param $z (ref eq)) (result (ref eq))
       (if (ref.test (ref i31) (local.get $z))
          (then (return (ref.i31 (i32.const 1)))))
-      (ref.i31 (call $size (call $unwrap_bigint (local.get $z)))))
+       
+         (ref.i31 (call $size (call $unwrap_bigint (local.get $z)))) )
 
    (func (export "ml_z_divisible")
       (param $z1 (ref eq)) (param $z2 (ref eq)) (result (ref eq))
@@ -1133,6 +1220,9 @@
             (call $remove
                (call $unwrap_bigint (local.get $z1))
                (call $unwrap_bigint (local.get $z2)))))
+      ;; Field 1 of the result of [Z.remove] is the (small) number of factors
+      ;; removed, which the zarith JS runtime hands back as an [i31].
+      ;; lint-ignore-start manual-portability-handling-unsafe
       (array.new_fixed $block 3 (ref.i31 (i32.const 0))
          (call $wrap_bigint
             (ref.as_non_null
@@ -1141,76 +1231,88 @@
                      (local.get $res) (ref.i31 (i32.const 0))))))
          (ref.cast (ref i31)
             (call $caml_js_get
-               (local.get $res) (ref.i31 (i32.const 1))))))
+               (local.get $res) (ref.i31 (i32.const 1)))))
+      ;; lint-ignore-end manual-portability-handling-unsafe
+      )
 
    (data $fac_non_positive "Z.fac: non-positive argument")
 
    (func (export "ml_z_fac")
       (param $a (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $a)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $a)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $fac_non_positive
                   (i32.const 0) (i32.const 28)))))
-      (call $wrap_bigint (call $fac (local.get $a))))
+       
+         (call $wrap_bigint (call $fac (local.get $a))) )
 
    (data $fac2_non_positive "Z.fac2: non-positive argument")
 
    (func (export "ml_z_fac2")
       (param $a (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $a)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $a)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $fac2_non_positive
                   (i32.const 0) (i32.const 28)))))
-      (call $wrap_bigint (call $fac2 (local.get $a))))
+       
+         (call $wrap_bigint (call $fac2 (local.get $a))) )
 
    (data $facM_non_positive "Z.facM: non-positive argument")
 
    (func (export "ml_z_facM")
       (param $a (ref eq)) (param $b (ref eq)) (result (ref eq))
-      (if (i32.or
-             (i32.lt_s
-                (i31.get_s (ref.cast (ref i31) (local.get $a)))
-                (i32.const 0))
-             (i32.lt_s
-                (i31.get_s (ref.cast (ref i31) (local.get $b)))
-                (i32.const 0)))
+      (if  
+             (i32.or
+                (i32.lt_s
+                   (i31.get_s (ref.cast (ref i31) (local.get $a)))
+                   (i32.const 0))
+                (i32.lt_s
+                   (i31.get_s (ref.cast (ref i31) (local.get $b)))
+                   (i32.const 0))) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $facM_non_positive
                   (i32.const 0) (i32.const 28)))))
-      (call $wrap_bigint (call $facM (local.get $a) (local.get $b))))
+       
+         (call $wrap_bigint (call $facM (local.get $a) (local.get $b))) )
 
    (data $fib_non_positive "Z.fib: non-positive argument")
 
    (func (export "ml_z_fib")
       (param $a (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $a)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $a)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $fib_non_positive
                   (i32.const 0) (i32.const 28)))))
-      (call $wrap_bigint (call $fib (local.get $a))))
+       
+         (call $wrap_bigint (call $fib (local.get $a))) )
 
    (data $lucnum_non_positive "Z.lucnum: non-positive argument")
 
    (func (export "ml_z_lucnum")
       (param $a (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $a)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $a)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string $lucnum_non_positive
                   (i32.const 0) (i32.const 31)))))
-      (call $wrap_bigint (call $lucnum (local.get $a))))
+       
+         (call $wrap_bigint (call $lucnum (local.get $a))) )
 
    (data $jacobi_invalid_arg "Z.jacobi: second argument is negative or even")
 
@@ -1219,6 +1321,8 @@
       (param $n (ref eq)) (param $k (ref eq)) (result (ref eq))
       (local $k' (ref any))
       (local.set $k' (call $unwrap_bigint (local.get $k)))
+      ;; As in [ml_z_powm_sec], [logand] with 1 returns a small integer.
+      ;; lint-ignore-start manual-portability-handling-unsafe
       (if (i32.or (i32.eqz (call $positive (local.get $k')))
              (i32.eqz
                 (i31.get_s
@@ -1229,42 +1333,46 @@
             (call $caml_invalid_argument
                (array.new_data $string $jacobi_invalid_arg
                   (i32.const 0) (i32.const 45)))))
+      ;; lint-ignore-end manual-portability-handling-unsafe
       (ref.i31
          (call $jacobi (call $unwrap_bigint (local.get $n)) (local.get $k'))))
 
-   (data $kronecker_not_implemented "ml_z_kronecker is not implemented")
-
    (func (export "ml_z_kronecker")
       (param $z1 (ref eq)) (param $z2 (ref eq)) (result (ref eq))
-      (call $caml_failwith
-         (array.new_data $string $kronecker_not_implemented
-            (i32.const 0) (i32.const 33)))
-      (ref.i31 (i32.const 0)))
+      ;; The Kronecker symbol is always one of -1, 0 and 1.
+      (ref.i31
+         (call $kronecker
+            (call $unwrap_bigint (local.get $z1))
+            (call $unwrap_bigint (local.get $z2)))))
 
    (data $primorial_non_positive "Z.primorial: non-positive argument")
 
    (func (export "ml_z_primorial")
       (param $va (ref eq)) (result (ref eq))
       (local $a i32)
-      (local.set $a (i31.get_s (ref.cast (ref i31) (local.get $va))))
-      (if (i32.lt_s (local.get $a) (i32.const 0))
-         (then
-            (call $caml_invalid_argument
-               (array.new_data $string $primorial_non_positive
-                  (i32.const 0) (i32.const 34)))))
-      (return_call $wrap_bigint (call $primorial (local.get $a))))
+       
+         (local.set $a (i31.get_s (ref.cast (ref i31) (local.get $va))))
+         (if (i32.lt_s (local.get $a) (i32.const 0))
+            (then
+               (call $caml_invalid_argument
+                  (array.new_data $string $primorial_non_positive
+                     (i32.const 0) (i32.const 34)))))
+         (return_call $wrap_bigint (call $primorial (local.get $a))) )
 
    (data $bin_non_positive "Z.bin: non-positive argument")
 
    (func (export "ml_z_bin")
       (param $z1 (ref eq)) (param $z2 (ref eq)) (result (ref eq))
-      (if (i32.lt_s
-             (i31.get_s (ref.cast (ref i31) (local.get $z2)))
-             (i32.const 0))
+      (if  
+             (i32.lt_s
+                (i31.get_s (ref.cast (ref i31) (local.get $z2)))
+                (i32.const 0)) 
          (then
             (call $caml_invalid_argument
                (array.new_data $string
                   $bin_non_positive (i32.const 0) (i32.const 28)))))
-      (call $wrap_bigint
-         (call $bin (call $unwrap_bigint (local.get $z1)) (local.get $z2))))
+       
+         (call $wrap_bigint
+            (call $bin
+               (call $unwrap_bigint (local.get $z1)) (local.get $z2))) )
 )

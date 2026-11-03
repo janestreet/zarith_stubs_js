@@ -99,6 +99,191 @@ module Ml_z_to_nativeint = struct
   ;;
 end
 
+let unsigned_max bits = Z.(pred (shift_left one bits))
+
+(* Reference semantics, from [external/zarith/src/z.mli] and [ml_to_int32_unsigned] in
+   [external/zarith/src/caml_z.c]: [fits_*_unsigned] is "non-negative {i and} fits", and
+   [to_*_unsigned] raises [Overflow] on anything that does not fit -- explicitly including
+   every negative value.
+
+   Both properties have to hold for small (immediate) and large (boxed) representations
+   alike, because the JS and Wasm runtimes special-case immediates: on Wasm a small [Z.t]
+   is an [i31], which is where the signed [fits_*] shortcut of "any immediate fits" stops
+   being valid once the target type is unsigned. *)
+let test_fits_unsigned ~bits ~fits =
+  let max = unsigned_max bits in
+  let check z ~expect = [%test_result: bool] ~message:(Z.to_string z) ~expect (fits z) in
+  (* Non-negative and in range. [zero]/[one] are immediates; [2^(bits-1)] and [max] are
+     boxed, so this covers both representations. *)
+  check Z.zero ~expect:true;
+  check Z.one ~expect:true;
+  check (Z.shift_left Z.one (Int.pred bits)) ~expect:true;
+  check (Z.pred max) ~expect:true;
+  check max ~expect:true;
+  (* Non-negative but out of range. *)
+  check (Z.succ max) ~expect:false;
+  check (Z.mul max max) ~expect:false;
+  (* Negative: never fits an unsigned type, whether immediate or boxed. *)
+  check Z.minus_one ~expect:false;
+  check (Z.of_int (-42)) ~expect:false;
+  check (Z.neg max) ~expect:false;
+  check (Z.neg (Z.succ max)) ~expect:false
+;;
+
+(* [to_] is applied only for effect here, so this stays polymorphic in its result type and
+   can be shared by the [int32] / [int64] / [nativeint] conversions. *)
+let test_to_unsigned_raises ~bits ~to_ =
+  let max = unsigned_max bits in
+  let raises z =
+    match to_ z with
+    | _ -> false
+    | exception Z.Overflow -> true
+  in
+  let check z ~expect =
+    [%test_result: bool] ~message:(Z.to_string z) ~expect (raises z)
+  in
+  (* In range: no exception. *)
+  check Z.zero ~expect:false;
+  check Z.one ~expect:false;
+  check max ~expect:false;
+  (* Out of range, and negative. A negative immediate is the case the Wasm runtime used to
+     return unchanged instead of raising. *)
+  check (Z.succ max) ~expect:true;
+  check (Z.mul max max) ~expect:true;
+  check Z.minus_one ~expect:true;
+  check (Z.of_int (-42)) ~expect:true;
+  check (Z.neg max) ~expect:true
+;;
+
+module Ml_z_to_int32_unsigned = struct
+  let%expect_test "maximum unsigned value" =
+    print_s [%sexp (Z.to_int32_unsigned (unsigned_max 32) : int32)];
+    [%expect {| -1 |}]
+  ;;
+
+  let%expect_test "overflow" =
+    test_to_unsigned_raises ~bits:32 ~to_:Z.to_int32_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+
+  (* Widths are fixed for [int32], so unlike [nativeint] these values are the same in
+     every backend and can be checked exactly. *)
+  let%expect_test "boundaries" =
+    List.iter [ "0"; "1"; "2147483647"; "2147483648"; "4294967295" ] ~f:(fun s ->
+      let z = Z.of_string s in
+      print_s [%message "" ~_:(z : t) ~_:(Z.to_int32_unsigned z : int32)]);
+    [%expect
+      {|
+      (0 0)
+      (1 1)
+      (2147483647 2147483647)
+      (2147483648 -2147483648)
+      (4294967295 -1)
+      |}]
+  ;;
+end
+
+module Ml_z_to_int64_unsigned = struct
+  let%expect_test "maximum unsigned value" =
+    print_s [%sexp (Z.to_int64_unsigned (unsigned_max 64) : int64)];
+    [%expect {| -1 |}]
+  ;;
+
+  let%expect_test "overflow" =
+    test_to_unsigned_raises ~bits:64 ~to_:Z.to_int64_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+
+  let%expect_test "boundaries" =
+    List.iter
+      [ "0"; "1"; "9223372036854775807"; "9223372036854775808"; "18446744073709551615" ]
+      ~f:(fun s ->
+        let z = Z.of_string s in
+        print_s [%message "" ~_:(z : t) ~_:(Z.to_int64_unsigned z : int64)]);
+    [%expect
+      {|
+      (0 0)
+      (1 1)
+      (9223372036854775807 9223372036854775807)
+      (9223372036854775808 -9223372036854775808)
+      (18446744073709551615 -1)
+      |}]
+  ;;
+end
+
+module Ml_z_to_nativeint_unsigned = struct
+  (* The width varies by backend, but the all-ones result does not: it is [-1] read as a
+     signed [nativeint] whether that is 32 or 64 bits wide. So this one can still be
+     printed explicitly. *)
+  let%expect_test "maximum unsigned value" =
+    print_s
+      [%sexp (Z.to_nativeint_unsigned (unsigned_max Stdlib.Nativeint.size) : nativeint)];
+    [%expect {| -1 |}]
+  ;;
+
+  (* Driven off [Nativeint.size] rather than a hard-coded width: [nativeint] is 32 bits
+     for js_of_ocaml but can be 64 bits on Wasm. This is what stops the runtime's choice
+     of width from drifting away from the width OCaml sees. *)
+  let%expect_test "overflow" =
+    test_to_unsigned_raises ~bits:Stdlib.Nativeint.size ~to_:Z.to_nativeint_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+end
+
+module Ml_z_fits_int32_unsigned = struct
+  let%expect_test "unsigned range" =
+    test_fits_unsigned ~bits:32 ~fits:Z.fits_int32_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+end
+
+module Ml_z_fits_int64_unsigned = struct
+  let%expect_test "unsigned range" =
+    test_fits_unsigned ~bits:64 ~fits:Z.fits_int64_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+end
+
+module Ml_z_fits_nativeint_unsigned = struct
+  let%expect_test "unsigned range" =
+    test_fits_unsigned ~bits:Stdlib.Nativeint.size ~fits:Z.fits_nativeint_unsigned;
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+
+  (* [fits_nativeint_unsigned] must agree with [fits_int32_unsigned] or
+     [fits_int64_unsigned] according to [Nativeint.size], so that the delegation the JS
+     runtime performs is checked rather than assumed. *)
+  let%expect_test "width agrees with [Nativeint.size]" =
+    let equivalent_to =
+      match Stdlib.Nativeint.size with
+      | 32 -> Z.fits_int32_unsigned
+      | 64 -> Z.fits_int64_unsigned
+      | other -> raise_s [%message "unexpected [Nativeint.size]" (other : int)]
+    in
+    List.iter
+      [ Z.zero
+      ; Z.one
+      ; Z.minus_one
+      ; unsigned_max Stdlib.Nativeint.size
+      ; Z.succ (unsigned_max Stdlib.Nativeint.size)
+      ; Z.neg (unsigned_max Stdlib.Nativeint.size)
+      ]
+      ~f:(fun z ->
+        [%test_result: bool]
+          ~message:(Z.to_string z)
+          ~expect:(equivalent_to z)
+          (Z.fits_nativeint_unsigned z));
+    print_endline "ok";
+    [%expect {| ok |}]
+  ;;
+end
+
 module To_float = struct
   let%expect_test "print (Z.to_float x)" =
     Static.quickcheck ~f:(fun x -> [%message (x : t) (Z.to_float x : float)]) ();
@@ -161,7 +346,14 @@ module Ml_z_fits_nativeint = struct
     [%expect "true"]
   ;;
 
-  (* 'nativeint' in js_of_ocaml is 32 bits, so the fits_int32 tests are sufficient. *)
+  let%expect_test ("fits_nativeint and to_nativeint agree at 2^63-1"
+    [@tags "64-bits-only"])
+    =
+    let max_64b_signed = Z.of_int64_exn Int64.((one lsl 63) - one) in
+    assert (Z.fits_nativeint max_64b_signed);
+    print_endline (Z.to_nativeint_exn max_64b_signed |> Nativeint.to_string);
+    [%expect {| 9223372036854775807 |}]
+  ;;
 end
 
 module Ml_z_of_float = struct

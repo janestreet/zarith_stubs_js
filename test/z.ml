@@ -164,7 +164,12 @@ end = struct
   ;;
 end
 
-module Random_internal = Make_random (Random.State)
+module Random_internal = Make_random (struct
+    type t = Random.State.t
+
+    let bits = [%eta1 Random.State.bits]
+    let int = [%eta2 Random.State.int]
+  end)
 
 module For_quickcheck : sig
   include Quickcheckable.S_int with type t := t
