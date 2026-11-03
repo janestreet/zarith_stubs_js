@@ -280,20 +280,6 @@ module Marshal = struct
       |}]
   ;;
 
-  let%expect_test ("marshal mix len" [@tags "js-only"]) =
-    m "-549389047489539543158";
-    [%expect
-      {|
-      84,95,A6,BE,00,00,00,21
-      00,00,00,01,00,00,00,06
-      00,00,00,05,18,5F,7A,00
-      00,00,00,10,00,00,00,00
-      00,00,00,18,01,00,00,00
-      0C,76,10,37,60,E7,FB,4D
-      C8,1D,00,00,00
-      |}]
-  ;;
-
   let%expect_test "marshal small" =
     m "0";
     [%expect

@@ -57,6 +57,7 @@ function ml_z_init(unit) {
     deserialize: caml_zarith_unmarshal,
     hash: ml_z_hash,
     compare: ml_z_compare,
+    compare_ext: ml_z_compare,
   };
   Object.defineProperty(BigInt.prototype, 'caml_custom', { value: '_z' });
   return 0
@@ -179,21 +180,21 @@ function ml_z_lognot(z1) {
 }
 
 //external shift_left: t -> int -> t
-//Provides: ml_z_shift_left const
+//Provides: ml_z_shift_left
 //Requires: ml_z_normalize
 function ml_z_shift_left(z1, amt) {
   return ml_z_normalize(BigInt(z1) << BigInt(amt));
 }
 
 //external shift_right: t -> int -> t
-//Provides: ml_z_shift_right const
+//Provides: ml_z_shift_right
 //Requires: ml_z_normalize
 function ml_z_shift_right(z1, amt) {
   return ml_z_normalize(BigInt(z1) >> BigInt(amt));
 }
 
 //external shift_right_trunc: t -> int -> t
-//Provides: ml_z_shift_right_trunc const
+//Provides: ml_z_shift_right_trunc
 //Requires: ml_z_normalize
 function ml_z_shift_right_trunc(z1, z2) {
   return ml_z_normalize(BigInt(z1) / (1n << BigInt(z2)));
@@ -420,13 +421,13 @@ function ml_z_fits_int32(z1) {
 //external fits_int32_unsigned: t -> bool
 //Provides: ml_z_fits_int32_unsigned
 function ml_z_fits_int32_unsigned(z1) {
-  return 0 <= z1 && z1 <= 4294967295;
+  return +(0 <= z1 && z1 <= 4294967295);
 }
 
 //external fits_int64_unsigned: t -> bool
 //Provides: ml_z_fits_int64_unsigned
 function ml_z_fits_int64_unsigned(z1) {
-  return 0 <= z1 && z1 <= 18446744073709551615n;
+  return +(0 <= z1 && z1 <= 18446744073709551615n);
 }
 
 //external fits_nativeint_unsigned: t -> bool
@@ -531,7 +532,7 @@ function ml_z_powm_sec(z1, z2, z3) {
 //Provides: ml_z_root
 //Requires: ml_z_normalize, ml_z_numbits, caml_invalid_argument
 function ml_z_root(z, i) {
-  if (i % 2 === 0 && z < 0) {
+  if ((typeof i === "bigint" ? i % 2n === 0n : i % 2 === 0) && z < 0) {
     caml_invalid_argument("Z.root: even root of a negative number");
   }
 
@@ -970,9 +971,9 @@ function ml_z_legendre(a, b) {
 }
 
 //Provides: ml_z_kronecker
-//Requires: caml_failwith
+//Requires: jsoo_z_kronecker
 function ml_z_kronecker(n, k) {
-  caml_failwith("ml_z_kronecker is not implemented");
+  return jsoo_z_kronecker(n, k);
 }
 
 //Provides: ml_z_primorial
@@ -1214,7 +1215,11 @@ function wasm_z_hash(caml_hash_mix_int, z1) {
 }
 
 //Provides: jsoo_z_to_bits const
-function jsoo_z_to_bits(z1) {
+function jsoo_z_to_bits(z1, pad) {
+  // [Z.to_bits] pads its output to a whole number of limbs. Limbs are 4 bytes
+  // here (like 32-bit native); wasm in portable-int mode passes 8 to mirror
+  // 64-bit native exactly.
+  pad = pad || 4;
   z1 = BigInt(z1);
   if (z1 < 0) z1 = -z1;
   var res = "";
@@ -1222,7 +1227,7 @@ function jsoo_z_to_bits(z1) {
     res += String.fromCharCode(Number(z1 & 255n));
     z1 >>= 8n;
   }
-  while ((res.length & 3) != 0) {
+  while (res.length % pad != 0) {
     res += String.fromCharCode(0);
   }
   return res;
@@ -1359,6 +1364,30 @@ function jsoo_z_jacobi(n, k) {
     return 0
 }
 
+//Provides: jsoo_z_kronecker
+//Requires: jsoo_z_jacobi
+function jsoo_z_kronecker(n, k) {
+  n = BigInt(n);
+  k = BigInt(k);
+  // (n/0) is 1 for n = +-1 and 0 otherwise.
+  if (k == 0n) return n == 1n || n == -1n ? 1 : 0;
+  var t = 1;
+  // (n/-1) is -1 for negative n and 1 otherwise.
+  if (k < 0n) {
+    k = -k;
+    if (n < 0n) t = -t;
+  }
+  // (n/2) is 0 for even n, 1 for n = +-1 mod 8 and -1 for n = +-3 mod 8.
+  while ((k & 1n) == 0n) {
+    k >>= 1n;
+    if ((n & 1n) == 0n) return 0;
+    var r = n & 7n;
+    if (r == 3n || r == 5n) t = -t;
+  }
+  // What is left is the Jacobi symbol, for an odd positive k.
+  return t * jsoo_z_jacobi(n, k);
+}
+
 //Provides: jsoo_z_bin
 //Requires: ml_z_normalize, ml_z_neg
 function jsoo_z_bin(n, k) {
@@ -1381,16 +1410,19 @@ function jsoo_z_bin(n, k) {
 
 //If: wasm
 //Provides: wasm_z_serialize
-function wasm_z_serialize(caml_serialize_int_1, s, z) {
+function wasm_z_serialize(caml_serialize_int_1, s, z, nb) {
+  // [nb] is the byte count announced in the marshalled data; it can exceed the
+  // minimal number of 32-bit words (in portable-int mode, whole 64-bit limbs
+  // are serialized, as on 64-bit native), in which case we pad with zeros.
   if (z < 0) z = -z;
-  do {
+  for (var i = 0; i < nb / 4; i++) {
     var x = Number(BigInt.asIntN(32, z));
     caml_serialize_int_1(s, x);
     caml_serialize_int_1(s, x >>> 8);
     caml_serialize_int_1(s, x >>> 16);
     caml_serialize_int_1(s, x >>> 24);
     z >>= 32n;
-  } while (z);
+  }
 }
 
 //If: wasm
